@@ -95,7 +95,7 @@ body.dark-mode .form-group label {
 }
 
 body.dark-mode .input-wrapper {
-  background: #111827;
+  background: #236368;
   border-color: #374151;
 }
 
@@ -171,7 +171,7 @@ body.dark-mode .role-option {
 }
 
 body.dark-mode .role-option:hover {
-  background: #111827;
+  background: #236368;
 }
 
 body.dark-mode .role-option.active {

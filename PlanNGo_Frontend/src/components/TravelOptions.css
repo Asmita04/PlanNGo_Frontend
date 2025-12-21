@@ -88,7 +88,7 @@ body.dark-mode .travel-error {
 }
 
 body.dark-mode .travel-option-card {
-  background: #111827;
+  background: #236368;
   border-color: #374151;
 }
 
@@ -123,6 +123,9 @@ body.dark-mode .option-icon {
 }
 
 .option-info h4 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-size: 1.125rem;
   font-weight: 700;
   color: #1f2937;
@@ -131,6 +134,79 @@ body.dark-mode .option-icon {
 
 body.dark-mode .option-info h4 {
   color: #f9fafb;
+}
+
+.transit-dropdown {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+body.dark-mode .transit-dropdown {
+  border-top-color: #374151;
+}
+
+.transit-option {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  border: 1px solid #e5e7eb;
+  transition: all 0.2s;
+}
+
+.transit-option:hover {
+  border-color: #6366f1;
+  background: #f9fafb;
+}
+
+body.dark-mode .transit-option {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+body.dark-mode .transit-option:hover {
+  background: #374151;
+}
+
+.transit-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
+  border-radius: 8px;
+}
+
+body.dark-mode .transit-icon {
+  background: #4b5563;
+}
+
+.transit-info {
+  flex: 1;
+}
+
+.transit-info strong {
+  display: block;
+  color: #1f2937;
+  font-size: 0.95rem;
+  margin-bottom: 0.25rem;
+}
+
+body.dark-mode .transit-info strong {
+  color: #f9fafb;
+}
+
+.transit-info small {
+  color: #6b7280;
+  font-size: 0.85rem;
 }
 
 .option-details {

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Navigation, MapPin, Clock, Loader } from 'lucide-react';
+import { Navigation, MapPin, Clock, Loader, ChevronDown, ChevronUp } from 'lucide-react';
 import { mapsService } from '../services/maps';
 import Button from './Button';
 import './TravelOptions.css';
@@ -10,24 +10,22 @@ const TravelOptions = ({ eventLocation, eventVenue }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [showOptions, setShowOptions] = useState(false);
+  const [expandedTransit, setExpandedTransit] = useState(false);
 
   const loadTravelOptions = async () => {
     setLoading(true);
     setError(null);
 
     try {
-      // Get user location
       const userPos = await mapsService.getUserLocation();
       setUserLocation(userPos);
 
-      // Geocode event address
       const eventPos = await mapsService.geocodeAddress(`${eventVenue}, ${eventLocation}`);
-
-      // Get travel options
-      const options = await mapsService.getTravelOptions(userPos, eventPos);
+      const options = await mapsService.getTravelOptions(userPos, eventPos, eventLocation);
       setTravelOptions(options);
       setShowOptions(true);
     } catch (err) {
+      console.error('Travel options error:', err);
       setError(err.message || 'Unable to get directions');
     } finally {
       setLoading(false);
@@ -64,7 +62,15 @@ const TravelOptions = ({ eventLocation, eventVenue }) => {
       {error && (
         <div className="travel-error">
           <p>{error}</p>
-          <small>Please enable location access to see directions</small>
+          {error.includes('denied') && (
+            <small>Go to browser settings → Site settings → Location → Allow</small>
+          )}
+          {error.includes('timeout') && (
+            <small>Check if location services are enabled on your device</small>
+          )}
+          {!error.includes('denied') && !error.includes('timeout') && (
+            <small>You can still open directions in Google Maps</small>
+          )}
         </div>
       )}
 
@@ -79,10 +85,19 @@ const TravelOptions = ({ eventLocation, eventVenue }) => {
         <div className="travel-options-list">
           {travelOptions.map((option, index) => (
             <div key={index} className="travel-option-card">
-              <div className="option-header">
+              <div 
+                className="option-header" 
+                onClick={() => option.mode === 'TRANSIT' && setExpandedTransit(!expandedTransit)}
+                style={{ cursor: option.mode === 'TRANSIT' ? 'pointer' : 'default' }}
+              >
                 <span className="option-icon">{option.icon}</span>
                 <div className="option-info">
-                  <h4>{option.mode.charAt(0) + option.mode.slice(1).toLowerCase()}</h4>
+                  <h4>
+                    {option.mode.charAt(0) + option.mode.slice(1).toLowerCase()}
+                    {option.mode === 'TRANSIT' && (
+                      expandedTransit ? <ChevronUp size={16} /> : <ChevronDown size={16} />
+                    )}
+                  </h4>
                   <div className="option-details">
                     <span>
                       <Clock size={14} />
@@ -95,6 +110,19 @@ const TravelOptions = ({ eventLocation, eventVenue }) => {
                   </div>
                 </div>
               </div>
+              {option.mode === 'TRANSIT' && expandedTransit && option.transitOptions && (
+                <div className="transit-dropdown">
+                  {option.transitOptions.map((transit, idx) => (
+                    <div key={idx} className="transit-option">
+                      <span className="transit-icon">{transit.icon}</span>
+                      <div className="transit-info">
+                        <strong>{transit.name}</strong>
+                        <small>{transit.route}</small>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
 

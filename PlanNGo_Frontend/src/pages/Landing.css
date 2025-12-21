@@ -4,7 +4,7 @@
 
 /* Hero Section */
 .hero {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #f3f3f3 0%, #d5d5d5 100%);
   padding: 8rem 0 6rem;
   position: relative;
   overflow: hidden;
@@ -89,7 +89,7 @@
 }
 
 body.dark-mode .features {
-  background: #111827;
+  background: #236368;
 }
 
 .section-header {

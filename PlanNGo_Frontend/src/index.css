@@ -7,13 +7,13 @@
 }
 
 :root {
-  --primary: #6366f1;
-  --primary-dark: #4f46e5;
+  --primary: #f8f8f8;
+  --primary-dark: #2563eb;
   --secondary: #ec4899;
   --success: #10b981;
   --warning: #f59e0b;
   --danger: #ef4444;
-  --dark: #1f2937;
+  --dark: #236368;
   --light: #f9fafb;
   --gray: #6b7280;
   --border: #e5e7eb;
@@ -23,19 +23,24 @@ body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   margin: 0;
   background-color: #ffffff;
-  color: #1f2937;
+  color: #236368;
   line-height: 1.6;
 }
 
 body.dark-mode {
-  background-color: #111827;
-  color: #f9fafb;
+  background-color: #6BAEB5;
+  color: #236368;
 }
 
 body.dark-mode {
-  --light: #1f2937;
-  --dark: #f9fafb;
-  --border: #374151;
+  --primary: #6BAEB5;
+  --primary-dark: #236368;
+  --secondary: #E09F3E;
+  --success: #138A36;
+  --danger: #9E2A2B;
+  --light: #236368;
+  --dark: #6BAEB5;
+  --border: #236368;
 }
 
 a {
