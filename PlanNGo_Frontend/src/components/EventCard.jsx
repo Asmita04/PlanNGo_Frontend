@@ -47,8 +47,7 @@ const EventCard = ({ event }) => {
 
         <div className="event-footer">
           <div className="event-price">
-            <DollarSign size={18} />
-            <span>${event.price}</span>
+            <span>₹{event.price}</span>
           </div>
           <div className="event-capacity">
             <Users size={16} />

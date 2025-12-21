@@ -12,11 +12,14 @@
 
 .event-card:hover {
   transform: translateY(-8px);
-  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.2);
+  box-shadow: 0 12px 40px rgb(35, 99, 104,0.2);
 }
 
+body.dark-mode{
+    background: #153B3D;
+}
 body.dark-mode .event-card {
-  background: #1f2937;
+  background: #236368;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
@@ -85,7 +88,7 @@ body.dark-mode .event-card {
 .event-card-content h3 {
   font-size: 1.25rem;
   margin-bottom: 0.5rem;
-  color: #1f2937;
+  color: #236368;
   font-weight: 700;
 }
 

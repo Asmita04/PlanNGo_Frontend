@@ -137,7 +137,7 @@ const EventDetails = () => {
             <div className="booking-card">
               <div className="price-section">
                 <span className="price-label">Ticket Price</span>
-                <span className="price">${event.price}</span>
+                <span className="price">₹{event.price}</span>
               </div>
 
               <div className="availability">
@@ -156,7 +156,7 @@ const EventDetails = () => {
 
               <div className="total-price">
                 <span>Total</span>
-                <span>${event.price * quantity}</span>
+                <span>₹{event.price * quantity}</span>
               </div>
 
               <Button fullWidth size="lg" onClick={handleBooking} disabled={availableTickets === 0}>

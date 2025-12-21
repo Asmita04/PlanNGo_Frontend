@@ -100,7 +100,7 @@ body.dark-mode .event-section h2 {
 }
 
 body.dark-mode .venue-info {
-  background: #111827;
+  background: #236368;
 }
 
 .venue-info svg {
@@ -139,7 +139,7 @@ body.dark-mode .venue-info h3 {
 }
 
 body.dark-mode .schedule-item {
-  background: #111827;
+  background: #236368;
 }
 
 .schedule-time {
@@ -264,7 +264,7 @@ body.dark-mode .quantity-selector label {
 }
 
 body.dark-mode .quantity-controls button {
-  background: #111827;
+  background: #236368;
   border-color: #374151;
 }
 
@@ -279,7 +279,7 @@ body.dark-mode .quantity-controls button {
 }
 
 body.dark-mode .quantity-controls input {
-  background: #111827;
+  background: #236368;
   border-color: #374151;
   color: #f9fafb;
 }
@@ -296,7 +296,7 @@ body.dark-mode .quantity-controls input {
 }
 
 body.dark-mode .total-price {
-  background: #111827;
+  background: #236368;
 }
 
 .total-price span:last-child {
@@ -331,7 +331,7 @@ body.dark-mode .total-price {
 }
 
 body.dark-mode .action-btn {
-  background: #111827;
+  background: #236368;
   border-color: #374151;
   color: #d1d5db;
 }

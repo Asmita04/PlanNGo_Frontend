@@ -94,7 +94,7 @@ const Booking = () => {
             </div>
             <div className="detail-row">
               <span>Total Paid:</span>
-              <strong>${booking.totalAmount}</strong>
+              <strong>₹{booking.totalAmount}</strong>
             </div>
           </div>
 
@@ -144,7 +144,7 @@ const Booking = () => {
                     </div>
                     <div className="ticket-info">
                       <span>Tickets: {cartItem.quantity}</span>
-                      <span>Price: ${cartItem.event.price} each</span>
+                      <span>Price: ₹{cartItem.event.price} each</span>
                     </div>
                   </div>
                 </div>
@@ -202,7 +202,7 @@ const Booking = () => {
                     </div>
                   </div>
                   <Button type="submit" fullWidth disabled={loading}>
-                    {loading ? 'Processing...' : `Pay $${totalAmount}`}
+                    {loading ? 'Processing...' : `Pay ₹${totalAmount}`}
                   </Button>
                 </form>
               </div>
@@ -214,7 +214,7 @@ const Booking = () => {
               <h3>Order Summary</h3>
               <div className="summary-item">
                 <span>Ticket Price</span>
-                <span>${cartItem.event.price}</span>
+                <span>₹{cartItem.event.price}</span>
               </div>
               <div className="summary-item">
                 <span>Quantity</span>
@@ -222,11 +222,11 @@ const Booking = () => {
               </div>
               <div className="summary-item">
                 <span>Service Fee</span>
-                <span>$0</span>
+                <span>₹0</span>
               </div>
               <div className="summary-total">
                 <span>Total</span>
-                <span>${totalAmount}</span>
+                <span>₹{totalAmount}</span>
               </div>
             </div>
           </div>
