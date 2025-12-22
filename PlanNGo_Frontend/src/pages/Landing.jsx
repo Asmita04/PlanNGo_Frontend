@@ -156,7 +156,7 @@ const Landing = () => {
             <div className="footer-section">
               <h4>Support</h4>
               <a href="#">Help Center</a>
-              <a href="#">Contact Us</a>
+              <a href="/contact">Contact Us</a>
               <a href="#">Terms of Service</a>
             </div>
           </div>
