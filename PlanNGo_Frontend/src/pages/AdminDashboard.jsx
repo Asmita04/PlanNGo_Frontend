@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { api } from '../services/api';
-import { Users, Calendar, DollarSign, TrendingUp, CheckCircle, XCircle } from 'lucide-react';
+import { Users, Calendar, DollarSign, TrendingUp, CheckCircle, XCircle, MapPin, Plus } from 'lucide-react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import Button from '../components/Button';
+import './Dashboard.css';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -10,6 +11,9 @@ const AdminDashboard = () => {
   const [analytics, setAnalytics] = useState(null);
   const [users, setUsers] = useState([]);
   const [events, setEvents] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationForm, setLocationForm] = useState({ name: '', country: '', timezone: '' });
 
   useEffect(() => {
     loadData();
@@ -25,6 +29,9 @@ const AdminDashboard = () => {
       
       const eventsData = await api.getEvents();
       setEvents(eventsData);
+      
+      const locationsData = await api.getPredefinedLocations();
+      setLocations(locationsData);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -45,6 +52,18 @@ const AdminDashboard = () => {
       loadData();
     } catch (error) {
       console.error('Error rejecting event:', error);
+    }
+  };
+
+  const handleAddLocation = async (e) => {
+    e.preventDefault();
+    try {
+      await api.addLocation(locationForm);
+      setShowLocationModal(false);
+      setLocationForm({ name: '', country: '', timezone: '' });
+      loadData();
+    } catch (error) {
+      console.error('Error adding location:', error);
     }
   };
 
@@ -72,6 +91,10 @@ const AdminDashboard = () => {
           <button className={activeTab === 'events' ? 'active' : ''} onClick={() => setActiveTab('events')}>
             <Calendar size={20} />
             Events
+          </button>
+          <button className={activeTab === 'locations' ? 'active' : ''} onClick={() => setActiveTab('locations')}>
+            <MapPin size={20} />
+            Locations
           </button>
         </div>
 
@@ -236,8 +259,77 @@ const AdminDashboard = () => {
               </div>
             </div>
           )}
+
+          {activeTab === 'locations' && (
+            <div className="locations-section">
+              <div className="section-header">
+                <h2>Predefined Locations</h2>
+                <Button icon={<Plus size={20} />} onClick={() => setShowLocationModal(true)}>
+                  Add Location
+                </Button>
+              </div>
+              <div className="locations-grid">
+                {locations.map(location => (
+                  <div key={location.id} className="location-card">
+                    <MapPin size={24} />
+                    <h4>{location.name}</h4>
+                    <p>{location.country}</p>
+                    <small>Timezone: {location.timezone}</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
       </div>
+
+      {showLocationModal && (
+        <div className="modal-overlay" onClick={() => setShowLocationModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Add New Location</h2>
+            <form onSubmit={handleAddLocation} className="location-form">
+              <div className="form-group">
+                <label>Location Name</label>
+                <input
+                  type="text"
+                  value={locationForm.name}
+                  onChange={(e) => setLocationForm({ ...locationForm, name: e.target.value })}
+                  placeholder="e.g., New York, NY"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Country</label>
+                <input
+                  type="text"
+                  value={locationForm.country}
+                  onChange={(e) => setLocationForm({ ...locationForm, country: e.target.value })}
+                  placeholder="e.g., USA"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Timezone</label>
+                <select
+                  value={locationForm.timezone}
+                  onChange={(e) => setLocationForm({ ...locationForm, timezone: e.target.value })}
+                  required
+                >
+                  <option value="">Select Timezone</option>
+                  <option value="EST">Eastern (EST)</option>
+                  <option value="CST">Central (CST)</option>
+                  <option value="MST">Mountain (MST)</option>
+                  <option value="PST">Pacific (PST)</option>
+                </select>
+              </div>
+              <div className="modal-actions">
+                <Button type="button" variant="outline" onClick={() => setShowLocationModal(false)}>Cancel</Button>
+                <Button type="submit">Add Location</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

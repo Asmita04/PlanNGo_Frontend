@@ -80,6 +80,137 @@ body.dark-mode .events-table td {
   color: white;
 }
 
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
+.section-header h2 {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+body.dark-mode .section-header h2 {
+  color: #f9fafb;
+}
+
+.locations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.location-card {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 2px solid #f3f4f6;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.location-card:hover {
+  border-color: #6366f1;
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.15);
+  transform: translateY(-2px);
+}
+
+body.dark-mode .location-card {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+body.dark-mode .location-card:hover {
+  border-color: #6366f1;
+}
+
+.location-card svg {
+  color: #6366f1;
+  margin-bottom: 1rem;
+}
+
+.location-card h4 {
+  margin: 0 0 0.5rem 0;
+  color: #1f2937;
+  font-weight: 600;
+}
+
+body.dark-mode .location-card h4 {
+  color: #f9fafb;
+}
+
+.location-card p {
+  margin: 0 0 0.5rem 0;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+body.dark-mode .location-card p {
+  color: #9ca3af;
+}
+
+.location-card small {
+  color: #9ca3af;
+  font-size: 0.875rem;
+}
+
+body.dark-mode .location-card small {
+  color: #6b7280;
+}
+
+.location-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.location-form .form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.location-form label {
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+body.dark-mode .location-form label {
+  color: #f9fafb;
+}
+
+.location-form input,
+.location-form select {
+  padding: 12px;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.location-form input:focus,
+.location-form select:focus {
+  outline: none;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+body.dark-mode .location-form input,
+body.dark-mode .location-form select {
+  background: #374151;
+  border-color: #4b5563;
+  color: #f9fafb;
+}
+
+body.dark-mode .location-form input:focus,
+body.dark-mode .location-form select:focus {
+  border-color: #6366f1;
+}
+
 @media (max-width: 768px) {
   .users-table,
   .events-table {
