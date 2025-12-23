@@ -9,6 +9,7 @@ import EventDetails from './pages/EventDetails';
 import Booking from './pages/Booking';
 import UserDashboard from './pages/UserDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
+import OrganizerProfile from './pages/OrganizerProfile';
 import AdminDashboard from './pages/AdminDashboard';
 import ContactUs from './pages/ContactUs';
 
@@ -60,6 +61,14 @@ const AppRoutes = () => {
           element={
             <ProtectedRoute allowedRoles={['organizer']}>
               <OrganizerDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/organizer/profile"
+          element={
+            <ProtectedRoute allowedRoles={['organizer']}>
+              <OrganizerProfile />
             </ProtectedRoute>
           }
         />

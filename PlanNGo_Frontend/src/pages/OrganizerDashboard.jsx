@@ -4,6 +4,7 @@ import { api } from '../services/api';
 import { Plus, Calendar, Users, DollarSign, TrendingUp, Edit, Trash2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Button from '../components/Button';
+import './Dashboard.css';
 import './OrganizerDashboard.css';
 
 const OrganizerDashboard = () => {
@@ -11,6 +12,7 @@ const OrganizerDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
   const [events, setEvents] = useState([]);
   const [analytics, setAnalytics] = useState(null);
+  const [locations, setLocations] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
@@ -37,6 +39,9 @@ const OrganizerDashboard = () => {
       
       const analyticsData = await api.getOrganizerAnalytics(user.id);
       setAnalytics(analyticsData);
+      
+      const locationData = await api.getPredefinedLocations();
+      setLocations(locationData);
     } catch (error) {
       console.error('Error loading data:', error);
     }
@@ -257,7 +262,12 @@ const OrganizerDashboard = () => {
               <div className="form-row">
                 <div className="form-group">
                   <label>Location</label>
-                  <input type="text" value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} required />
+                  <select value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} required>
+                    <option value="">Select Location</option>
+                    {locations.map(location => (
+                      <option key={location.id} value={location.name}>{location.name}</option>
+                    ))}
+                  </select>
                 </div>
                 <div className="form-group">
                   <label>Venue</label>

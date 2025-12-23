@@ -78,8 +78,13 @@ const Navbar = () => {
                   </button>
                   <div className="user-dropdown">
                     <Link to={getDashboardLink()}>
-                      <User size={16} /> Profile
+                      <User size={16} /> Dashboard
                     </Link>
+                    {user.role === 'organizer' && (
+                      <Link to="/organizer/profile">
+                        <User size={16} /> Profile
+                      </Link>
+                    )}
                     <button onClick={handleLogout}>
                       <LogOut size={16} /> Logout
                     </button>
