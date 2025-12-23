@@ -9,6 +9,11 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, PieChart as RechartsPie, Cell, Area, AreaChart
 } from 'recharts';
+import { api } from '../services/api';
+import { Users, Calendar, DollarSign, TrendingUp, CheckCircle, XCircle, MapPin, Plus } from 'lucide-react';
+import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
+import Button from '../components/Button';
+import './Dashboard.css';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
@@ -50,6 +55,14 @@ const AdminDashboard = () => {
   ];
 
   // Animated counter effect
+  const [activeTab, setActiveTab] = useState('overview');
+  const [analytics, setAnalytics] = useState(null);
+  const [users, setUsers] = useState([]);
+  const [events, setEvents] = useState([]);
+  const [locations, setLocations] = useState([]);
+  const [showLocationModal, setShowLocationModal] = useState(false);
+  const [locationForm, setLocationForm] = useState({ name: '', country: '', timezone: '' });
+
   useEffect(() => {
     const animateCounters = () => {
       Object.keys(finalStats).forEach(key => {
@@ -108,6 +121,55 @@ const AdminDashboard = () => {
       trend: 'up'
     }
   ];
+  const loadData = async () => {
+    try {
+      const analyticsData = await api.getAdminAnalytics();
+      setAnalytics(analyticsData);
+      
+      const usersData = await api.getAllUsers();
+      setUsers(usersData);
+      
+      const eventsData = await api.getEvents();
+      setEvents(eventsData);
+      
+      const locationsData = await api.getPredefinedLocations();
+      setLocations(locationsData);
+    } catch (error) {
+      console.error('Error loading data:', error);
+    }
+  };
+
+  const handleApproveEvent = async (id) => {
+    try {
+      await api.approveEvent(id);
+      loadData();
+    } catch (error) {
+      console.error('Error approving event:', error);
+    }
+  };
+
+  const handleRejectEvent = async (id) => {
+    try {
+      await api.rejectEvent(id);
+      loadData();
+    } catch (error) {
+      console.error('Error rejecting event:', error);
+    }
+  };
+
+  const handleAddLocation = async (e) => {
+    e.preventDefault();
+    try {
+      await api.addLocation(locationForm);
+      setShowLocationModal(false);
+      setLocationForm({ name: '', country: '', timezone: '' });
+      loadData();
+    } catch (error) {
+      console.error('Error adding location:', error);
+    }
+  };
+
+  const COLORS = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
 
   return (
     <div className="admin-dashboard">
@@ -158,6 +220,43 @@ const AdminDashboard = () => {
                         {card.change}
                       </span>
                     </div>
+        </div>
+
+        <div className="dashboard-tabs">
+          <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => setActiveTab('overview')}>
+            <TrendingUp size={20} />
+            Overview
+          </button>
+          <button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
+            <Users size={20} />
+            Users
+          </button>
+          <button className={activeTab === 'events' ? 'active' : ''} onClick={() => setActiveTab('events')}>
+            <Calendar size={20} />
+            Events
+          </button>
+          <button className={activeTab === 'locations' ? 'active' : ''} onClick={() => setActiveTab('locations')}>
+            <MapPin size={20} />
+            Locations
+          </button>
+        </div>
+
+        <div className="dashboard-content">
+          {activeTab === 'overview' && analytics && (
+            <div className="overview-section">
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <div className="stat-icon" style={{ background: '#dbeafe' }}>
+                    <Users size={24} color="#3b82f6" />
+                  </div>
+                  <div className="stat-info">
+                    <p>Total Users</p>
+                    <h3>{analytics.totalUsers}</h3>
+                  </div>
+                </div>
+                <div className="stat-card">
+                  <div className="stat-icon" style={{ background: '#ede9fe' }}>
+                    <Calendar size={24} color="#6366f1" />
                   </div>
                   
                   <div className="stat-content">
@@ -277,6 +376,29 @@ const AdminDashboard = () => {
               </div>
             </motion.div>
           </div>
+            </div>
+          )}
+
+          {activeTab === 'locations' && (
+            <div className="locations-section">
+              <div className="section-header">
+                <h2>Predefined Locations</h2>
+                <Button icon={<Plus size={20} />} onClick={() => setShowLocationModal(true)}>
+                  Add Location
+                </Button>
+              </div>
+              <div className="locations-grid">
+                {locations.map(location => (
+                  <div key={location.id} className="location-card">
+                    <MapPin size={24} />
+                    <h4>{location.name}</h4>
+                    <p>{location.country}</p>
+                    <small>Timezone: {location.timezone}</small>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Recent Activity */}
@@ -313,6 +435,54 @@ const AdminDashboard = () => {
           </div>
         </motion.div>
       </div>
+
+      {showLocationModal && (
+        <div className="modal-overlay" onClick={() => setShowLocationModal(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h2>Add New Location</h2>
+            <form onSubmit={handleAddLocation} className="location-form">
+              <div className="form-group">
+                <label>Location Name</label>
+                <input
+                  type="text"
+                  value={locationForm.name}
+                  onChange={(e) => setLocationForm({ ...locationForm, name: e.target.value })}
+                  placeholder="e.g., New York, NY"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Country</label>
+                <input
+                  type="text"
+                  value={locationForm.country}
+                  onChange={(e) => setLocationForm({ ...locationForm, country: e.target.value })}
+                  placeholder="e.g., USA"
+                  required
+                />
+              </div>
+              <div className="form-group">
+                <label>Timezone</label>
+                <select
+                  value={locationForm.timezone}
+                  onChange={(e) => setLocationForm({ ...locationForm, timezone: e.target.value })}
+                  required
+                >
+                  <option value="">Select Timezone</option>
+                  <option value="EST">Eastern (EST)</option>
+                  <option value="CST">Central (CST)</option>
+                  <option value="MST">Mountain (MST)</option>
+                  <option value="PST">Pacific (PST)</option>
+                </select>
+              </div>
+              <div className="modal-actions">
+                <Button type="button" variant="outline" onClick={() => setShowLocationModal(false)}>Cancel</Button>
+                <Button type="submit">Add Location</Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

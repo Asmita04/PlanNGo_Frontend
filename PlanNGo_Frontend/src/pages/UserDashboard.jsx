@@ -3,6 +3,7 @@ import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
 import { Ticket, User, Heart, Download, Calendar, MapPin } from 'lucide-react';
 import Button from '../components/Button';
+import './Dashboard.css';
 import './UserDashboard.css';
 
 const UserDashboard = () => {
