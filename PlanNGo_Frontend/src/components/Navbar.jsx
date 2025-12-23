@@ -33,6 +33,14 @@ const Navbar = () => {
 
           <div className={`navbar-links ${showMenu ? 'active' : ''}`}>
             <Link to="/events" onClick={() => setShowMenu(false)}>Events</Link>
+            <Link to="/about" onClick={() => setShowMenu(false)}>About Us</Link>
+            <Link to="/contact" onClick={() => setShowMenu(false)}>Contact Us</Link>
+            {user && user.role === 'admin' && (
+              <>
+                <Link to="/admin/events" onClick={() => setShowMenu(false)}>Event Approval</Link>
+                <Link to="/admin/organizers" onClick={() => setShowMenu(false)}>Organizer Verification</Link>
+              </>
+            )}
             {user && <Link to={getDashboardLink()} onClick={() => setShowMenu(false)}>Dashboard</Link>}
             {!user && <Link to="/login" onClick={() => setShowMenu(false)}>Login</Link>}
           </div>

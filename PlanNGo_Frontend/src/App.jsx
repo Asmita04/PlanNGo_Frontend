@@ -11,7 +11,11 @@ import UserDashboard from './pages/UserDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
 import OrganizerProfile from './pages/OrganizerProfile';
 import AdminDashboard from './pages/AdminDashboard';
+import ModernAdminDashboard from './pages/ModernAdminDashboard';
 import ContactUs from './pages/ContactUs';
+import AboutUs from './pages/AboutUs';
+import EventApproval from './components/EventApproval';
+import OrganizerVerification from './components/OrganizerVerification';
 
 // Protected Route Component
 const ProtectedRoute = ({ children, allowedRoles }) => {
@@ -40,6 +44,24 @@ const AppRoutes = () => {
         <Route path="/events" element={<Events />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route path="/contact" element={<ContactUs />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/admin/modern" element={<ModernAdminDashboard />} />
+        <Route 
+          path="/admin/events" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <EventApproval />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/organizers" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <OrganizerVerification />
+            </ProtectedRoute>
+          } 
+        />
         <Route
           path="/booking"
           element={
