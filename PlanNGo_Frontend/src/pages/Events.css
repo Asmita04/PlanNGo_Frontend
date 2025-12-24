@@ -212,13 +212,14 @@ body.dark-mode .filter-group input[type="date"] {
 
 .events-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 1.25rem;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
   align-items: start;
 }
 
 .events-grid .event-card {
-  margin: 0 auto;
+  width: 100%;
+  max-width: none;
 }
 
 .no-results {
