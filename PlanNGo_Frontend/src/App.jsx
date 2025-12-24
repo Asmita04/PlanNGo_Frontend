@@ -62,6 +62,26 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } 
         />
+        <Route path="/events/:id/book" element={<Booking />} />
+        <Route path="/contact" element={<ContactUs />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/admin/modern" element={<ModernAdminDashboard />} />
+        <Route 
+          path="/admin/events" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <EventApproval />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/admin/organizers" 
+          element={
+            <ProtectedRoute allowedRoles={['admin']}>
+              <OrganizerVerification />
+            </ProtectedRoute>
+          } 
+        />
         <Route
           path="/booking"
           element={

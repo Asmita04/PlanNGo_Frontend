@@ -198,6 +198,38 @@ export const api = {
     return { user: userWithoutPassword, token: 'mock-token-' + user.id };
   },
 
+  googleLogin: async (googleUser) => {
+    await delay(500);
+    const { email, name, picture, sub: googleId } = googleUser;
+    
+    // Check if user exists
+    let user = mockUsers.find(u => u.email === email);
+    
+    if (user) {
+      // Update user with Google info if not already set
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.avatar = picture;
+      }
+    } else {
+      // Create new user
+      user = {
+        id: mockUsers.length + 1,
+        email,
+        name,
+        role: 'user',
+        phone: '',
+        avatar: picture,
+        googleId,
+        password: null // Google users don't have passwords
+      };
+      mockUsers.push(user);
+    }
+    
+    const { password: _, ...userWithoutPassword } = user;
+    return { user: userWithoutPassword, token: 'mock-token-' + user.id };
+  },
+
   signup: async (userData) => {
     await delay(500);
     const exists = mockUsers.find(u => u.email === userData.email);
@@ -207,6 +239,31 @@ export const api = {
       ...userData,
       avatar: `https://ui-avatars.com/api/?name=${userData.name.replace(' ', '+')}`
     };
+    mockUsers.push(newUser);
+    const { password: _, ...userWithoutPassword } = newUser;
+    return { user: userWithoutPassword, token: 'mock-token-' + newUser.id };
+  },
+
+  googleSignup: async (googleUser, additionalData = {}) => {
+    await delay(500);
+    const { email, name, picture, sub: googleId } = googleUser;
+    
+    // Check if user already exists
+    const exists = mockUsers.find(u => u.email === email);
+    if (exists) throw new Error('Email already exists');
+    
+    const newUser = {
+      id: mockUsers.length + 1,
+      email,
+      name,
+      avatar: picture,
+      googleId,
+      password: null, // Google users don't have passwords
+      role: additionalData.role || 'user',
+      phone: additionalData.phone || '',
+      ...additionalData
+    };
+    
     mockUsers.push(newUser);
     const { password: _, ...userWithoutPassword } = newUser;
     return { user: userWithoutPassword, token: 'mock-token-' + newUser.id };

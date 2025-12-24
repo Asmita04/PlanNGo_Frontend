@@ -1,15 +1,19 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { CreditCard, Calendar, MapPin, Ticket, CheckCircle } from 'lucide-react';
+import { CreditCard, Calendar, MapPin, Ticket, CheckCircle, Loader } from 'lucide-react';
 import Button from '../components/Button';
 import './Booking.css';
 
 const Booking = () => {
+  const { id } = useParams();
   const navigate = useNavigate();
-  const { user, cart, clearCart, addNotification } = useApp();
+  const { user, addNotification } = useApp();
+  const [event, setEvent] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [step, setStep] = useState(1);
+  const [quantity, setQuantity] = useState(1);
   const [paymentData, setPaymentData] = useState({
     cardNumber: '',
     cardName: '',
@@ -17,30 +21,61 @@ const Booking = () => {
     cvv: ''
   });
   const [booking, setBooking] = useState(null);
-  const [loading, setLoading] = useState(false);
+  const [processing, setProcessing] = useState(false);
+
+  useEffect(() => {
+    if (id) {
+      loadEvent();
+    } else {
+      setLoading(false);
+    }
+  }, [id]);
+
+  const loadEvent = async () => {
+    try {
+      const eventData = await api.getEventById(id);
+      setEvent(eventData);
+    } catch (error) {
+      console.error('Error loading event:', error);
+      addNotification({ message: 'Event not found', type: 'error' });
+      navigate('/events');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!user) {
     navigate('/login');
     return null;
   }
 
-  if (cart.length === 0 && !booking) {
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <Loader className="spinner" size={48} />
+        <p>Loading event details...</p>
+      </div>
+    );
+  }
+
+  if (!event) {
     return (
       <div className="empty-cart">
         <Ticket size={64} />
-        <h2>Your cart is empty</h2>
-        <p>Browse events and add tickets to your cart</p>
+        <h2>Event not found</h2>
+        <p>The event you're trying to book doesn't exist</p>
         <Button onClick={() => navigate('/events')}>Browse Events</Button>
       </div>
     );
   }
 
-  const cartItem = cart[0];
-  const totalAmount = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+  const totalAmount = event.price * quantity;
+  const availableTickets = event.capacity - event.booked;
+  const isSoldOut = availableTickets <= 0;
 
   const handlePayment = async (e) => {
     e.preventDefault();
-    setLoading(true);
+    setProcessing(true);
 
     try {
       // Simulate payment processing
@@ -48,21 +83,20 @@ const Booking = () => {
 
       const bookingData = {
         userId: user.id,
-        eventId: cartItem.eventId,
-        quantity: cartItem.quantity,
-        totalAmount: cartItem.totalPrice,
+        eventId: event.id,
+        quantity: quantity,
+        totalAmount: totalAmount,
         paymentMethod: 'Credit Card'
       };
 
       const newBooking = await api.createBooking(bookingData);
       setBooking(newBooking);
-      clearCart();
       setStep(3);
       addNotification({ message: 'Booking confirmed successfully!', type: 'success' });
     } catch (error) {
       addNotification({ message: 'Payment failed. Please try again.', type: 'error' });
     } finally {
-      setLoading(false);
+      setProcessing(false);
     }
   };
 
@@ -82,11 +116,11 @@ const Booking = () => {
             </div>
             <div className="detail-row">
               <span>Event:</span>
-              <strong>{cartItem.event.title}</strong>
+              <strong>{event.title}</strong>
             </div>
             <div className="detail-row">
               <span>Date:</span>
-              <strong>{new Date(cartItem.event.date).toLocaleDateString()}</strong>
+              <strong>{new Date(event.date).toLocaleDateString()}</strong>
             </div>
             <div className="detail-row">
               <span>Tickets:</span>
@@ -103,6 +137,17 @@ const Booking = () => {
             <Button variant="outline" onClick={() => navigate('/events')}>Browse More Events</Button>
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (isSoldOut) {
+    return (
+      <div className="empty-cart">
+        <Ticket size={64} />
+        <h2>Event Sold Out</h2>
+        <p>Sorry, this event is completely sold out</p>
+        <Button onClick={() => navigate('/events')}>Browse Other Events</Button>
       </div>
     );
   }
@@ -131,23 +176,51 @@ const Booking = () => {
               <div className="review-section">
                 <h2>Review Your Booking</h2>
                 <div className="event-summary">
-                  <img src={cartItem.event.image} alt={cartItem.event.title} />
+                  <img src={event.image} alt={event.title} />
                   <div className="event-info">
-                    <h3>{cartItem.event.title}</h3>
+                    <h3>{event.title}</h3>
                     <div className="event-detail">
                       <Calendar size={18} />
-                      <span>{new Date(cartItem.event.date).toLocaleDateString()}</span>
+                      <span>{new Date(event.date).toLocaleDateString()}</span>
                     </div>
                     <div className="event-detail">
                       <MapPin size={18} />
-                      <span>{cartItem.event.location}</span>
+                      <span>{event.location}</span>
                     </div>
-                    <div className="ticket-info">
-                      <span>Tickets: {cartItem.quantity}</span>
-                      <span>Price: ₹{cartItem.event.price} each</span>
+                    <div className="tickets-available">
+                      <span>Only {availableTickets} tickets left</span>
                     </div>
                   </div>
                 </div>
+                
+                <div className="quantity-section">
+                  <h4>Select Quantity</h4>
+                  <div className="quantity-controls">
+                    <button 
+                      type="button"
+                      onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                      disabled={quantity <= 1}
+                    >
+                      -
+                    </button>
+                    <input 
+                      type="number" 
+                      value={quantity} 
+                      onChange={(e) => setQuantity(Math.max(1, Math.min(availableTickets, parseInt(e.target.value) || 1)))}
+                      min="1"
+                      max={availableTickets}
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setQuantity(Math.min(availableTickets, quantity + 1))}
+                      disabled={quantity >= availableTickets}
+                    >
+                      +
+                    </button>
+                  </div>
+                  
+                </div>
+                
                 <Button fullWidth onClick={() => setStep(2)}>Proceed to Payment</Button>
               </div>
             )}
@@ -201,8 +274,8 @@ const Booking = () => {
                       />
                     </div>
                   </div>
-                  <Button type="submit" fullWidth disabled={loading}>
-                    {loading ? 'Processing...' : `Pay ₹${totalAmount}`}
+                  <Button type="submit" fullWidth disabled={processing}>
+                    {processing ? 'Processing...' : `Pay ₹${totalAmount}`}
                   </Button>
                 </form>
               </div>
@@ -214,11 +287,11 @@ const Booking = () => {
               <h3>Order Summary</h3>
               <div className="summary-item">
                 <span>Ticket Price</span>
-                <span>₹{cartItem.event.price}</span>
+                <span>₹{event.price}</span>
               </div>
               <div className="summary-item">
                 <span>Quantity</span>
-                <span>× {cartItem.quantity}</span>
+                <span>× {quantity}</span>
               </div>
               <div className="summary-item">
                 <span>Service Fee</span>
