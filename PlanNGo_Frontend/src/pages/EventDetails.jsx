@@ -10,7 +10,7 @@ import './EventDetails.css';
 const EventDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { user, favorites, toggleFavorite, addToCart, addNotification } = useApp();
+  const { user, favorites, toggleFavorite, addNotification, bookingState, updateBooking } = useApp();
   const [event, setEvent] = useState(null);
   const [loading, setLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -18,6 +18,15 @@ const EventDetails = () => {
   useEffect(() => {
     loadEvent();
   }, [id]);
+
+  useEffect(() => {
+    // Restore quantity if returning to same event
+    if (event && bookingState.event && bookingState.event.id === event.id) {
+      setQuantity(bookingState.quantity);
+    } else {
+      setQuantity(1);
+    }
+  }, [event, bookingState]);
 
   const loadEvent = async () => {
     try {
@@ -35,7 +44,7 @@ const EventDetails = () => {
       navigate('/login');
       return;
     }
-    addToCart({ eventId: event.id, event, quantity, totalPrice: event.price * quantity });
+    updateBooking(event, quantity);
     navigate('/booking');
   };
 
@@ -149,7 +158,16 @@ const EventDetails = () => {
                 <label>Number of Tickets</label>
                 <div className="quantity-controls">
                   <button onClick={() => setQuantity(Math.max(1, quantity - 1))}>-</button>
-                  <input type="number" value={quantity} onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))} />
+                  <input 
+                    type="number" 
+                    value={quantity} 
+                    onChange={(e) => {
+                      const value = parseInt(e.target.value) || 1;
+                      setQuantity(Math.max(1, Math.min(availableTickets, value)));
+                    }}
+                    min="1"
+                    max={availableTickets}
+                  />
                   <button onClick={() => setQuantity(Math.min(availableTickets, quantity + 1))}>+</button>
                 </div>
               </div>

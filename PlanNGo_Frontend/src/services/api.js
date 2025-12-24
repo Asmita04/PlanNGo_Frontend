@@ -61,7 +61,7 @@ const mockEvents = [
     time: "10:00 AM",
     location: "Delhi",
     venue: "National Gallery of Modern Art",
-    price: 500,
+    price: 1,
     image: "https://images.unsplash.com/photo-1531243269054-5ebf6f34081e?w=800",
     organizer: "Art Gallery Delhi",
     organizerId: 4,
@@ -342,5 +342,37 @@ export const api = {
     const event = mockEvents.find(e => e.id === eventId);
     if (event) event.status = 'rejected';
     return event;
+  },
+
+  // Razorpay Payment APIs
+  createPaymentOrder: async (orderData) => {
+    await delay(500);
+    // For testing with real Razorpay, we'll simulate a proper order response
+    // In production, replace this with actual Razorpay API call
+    const orderId = `order_${Math.random().toString(36).substr(2, 9)}`;
+    return {
+      id: orderId,
+      entity: 'order',
+      amount: orderData.amount,
+      amount_paid: 0,
+      amount_due: orderData.amount,
+      currency: orderData.currency || 'INR',
+      receipt: `receipt_${Date.now()}`,
+      status: 'created',
+      attempts: 0,
+      notes: {},
+      created_at: Math.floor(Date.now() / 1000)
+    };
+  },
+
+  verifyPayment: async (paymentData) => {
+    await delay(500);
+    // In real implementation, this would verify the payment signature on your backend
+    // For demo purposes, we'll simulate successful verification
+    return {
+      success: true,
+      paymentId: paymentData.razorpay_payment_id,
+      orderId: paymentData.razorpay_order_id
+    };
   }
 };

@@ -14,6 +14,11 @@ export const AppProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [cart, setCart] = useState([]);
+  const [bookingState, setBookingState] = useState({
+    event: null,
+    quantity: 1,
+    totalPrice: 0
+  });
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
@@ -72,6 +77,15 @@ export const AppProvider = ({ children }) => {
     });
   };
 
+  const updateBooking = (event, quantity) => {
+    const totalPrice = event.price * quantity;
+    setBookingState({ event, quantity, totalPrice });
+  };
+
+  const clearBooking = () => {
+    setBookingState({ event: null, quantity: 1, totalPrice: 0 });
+  };
+
   const addToCart = (item) => {
     setCart(prev => [...prev, { ...item, id: Date.now() }]);
   };
@@ -99,7 +113,10 @@ export const AppProvider = ({ children }) => {
       cart,
       addToCart,
       removeFromCart,
-      clearCart
+      clearCart,
+      bookingState,
+      updateBooking,
+      clearBooking
     }}>
       {children}
     </AppContext.Provider>

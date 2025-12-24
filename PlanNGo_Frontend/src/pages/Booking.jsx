@@ -1,67 +1,148 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { CreditCard, Calendar, MapPin, Ticket, CheckCircle } from 'lucide-react';
+import { CreditCard, Calendar, MapPin, Ticket, CheckCircle, Shield } from 'lucide-react';
 import Button from '../components/Button';
 import './Booking.css';
 
 const Booking = () => {
   const navigate = useNavigate();
-  const { user, cart, clearCart, addNotification } = useApp();
+  const { user, addNotification, bookingState, clearBooking } = useApp();
   const [step, setStep] = useState(1);
-  const [paymentData, setPaymentData] = useState({
-    cardNumber: '',
-    cardName: '',
-    expiryDate: '',
-    cvv: ''
-  });
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [razorpayLoaded, setRazorpayLoaded] = useState(false);
 
   if (!user) {
     navigate('/login');
     return null;
   }
 
-  if (cart.length === 0 && !booking) {
+  if (!bookingState.event) {
     return (
       <div className="empty-cart">
         <Ticket size={64} />
-        <h2>Your cart is empty</h2>
-        <p>Browse events and add tickets to your cart</p>
+        <h2>No event selected</h2>
+        <p>Please select an event to book tickets</p>
         <Button onClick={() => navigate('/events')}>Browse Events</Button>
       </div>
     );
   }
 
-  const cartItem = cart[0];
-  const totalAmount = cart.reduce((sum, item) => sum + item.totalPrice, 0);
+  const { event, quantity, totalPrice } = bookingState;
 
-  const handlePayment = async (e) => {
-    e.preventDefault();
+  // Debug logging
+  console.log('Booking state:', bookingState);
+
+  useEffect(() => {
+    const loadRazorpay = () => {
+      return new Promise((resolve) => {
+        const existingScript = document.getElementById('razorpay-checkout-js');
+        if (existingScript) {
+          setRazorpayLoaded(true);
+          resolve(true);
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.id = 'razorpay-checkout-js';
+        script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+        script.async = true;
+        
+        script.onload = () => {
+          setRazorpayLoaded(true);
+          resolve(true);
+        };
+        
+        script.onerror = () => {
+          console.warn('Razorpay script failed to load');
+          setRazorpayLoaded(false);
+          resolve(false);
+        };
+        
+        document.head.appendChild(script);
+      });
+    };
+
+    loadRazorpay();
+  }, []);
+
+  const handleRazorpayPayment = async () => {
+    if (!window.Razorpay) {
+      addNotification({ message: 'Payment gateway unavailable. Please disable ad blocker and try again.', type: 'error' });
+      return;
+    }
+
     setLoading(true);
 
     try {
-      // Simulate payment processing
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      // For demo purposes, simulate payment without creating real Razorpay order
+      const options = {
+        key: 'rzp_test_Rv0f4eyqBgZIGr',
+        amount: totalPrice * 100,
+        currency: 'INR',
+        name: 'PlanNGo',
+        description: `Booking for ${cartItem.event.title}`,
+        image: 'https://cdn.razorpay.com/logos/7K3b6d18wHwKzL_medium.png',
+        method: {
+          netbanking: true,
+          card: true,
+          upi: true,
+          wallet: true,
+          emi: false,
+          paylater: false,
+          qr: true
+        },
+        handler: async (response) => {
+          try {
+            const bookingData = {
+              userId: user.id,
+              eventId: event.id,
+              quantity: quantity,
+              totalAmount: totalPrice,
+              paymentMethod: 'Razorpay',
+              paymentId: response.razorpay_payment_id || 'demo_payment_' + Date.now()
+            };
 
-      const bookingData = {
-        userId: user.id,
-        eventId: cartItem.eventId,
-        quantity: cartItem.quantity,
-        totalAmount: cartItem.totalPrice,
-        paymentMethod: 'Credit Card'
+            const newBooking = await api.createBooking(bookingData);
+            setBooking(newBooking);
+            clearBooking();
+            setStep(3);
+            addNotification({ message: 'Payment successful! Booking confirmed.', type: 'success' });
+          } catch (error) {
+            addNotification({ message: 'Booking failed', type: 'error' });
+            setLoading(false);
+          }
+        },
+        prefill: {
+          name: user.name,
+          email: user.email,
+          contact: user.phone || '9999999999'
+        },
+        theme: {
+          color: '#6366f1'
+        },
+        modal: {
+          ondismiss: () => {
+            setLoading(false);
+            addNotification({ message: 'Payment cancelled', type: 'info' });
+          }
+        }
       };
 
-      const newBooking = await api.createBooking(bookingData);
-      setBooking(newBooking);
-      clearCart();
-      setStep(3);
-      addNotification({ message: 'Booking confirmed successfully!', type: 'success' });
+      const rzp = new window.Razorpay(options);
+      rzp.on('payment.failed', function (response) {
+        setLoading(false);
+        addNotification({ 
+          message: `Payment failed: ${response.error?.description || 'Unknown error'}`, 
+          type: 'error' 
+        });
+      });
+      
+      rzp.open();
     } catch (error) {
-      addNotification({ message: 'Payment failed. Please try again.', type: 'error' });
-    } finally {
+      addNotification({ message: 'Failed to initiate payment', type: 'error' });
       setLoading(false);
     }
   };
@@ -82,11 +163,11 @@ const Booking = () => {
             </div>
             <div className="detail-row">
               <span>Event:</span>
-              <strong>{cartItem.event.title}</strong>
+              <strong>{event.title}</strong>
             </div>
             <div className="detail-row">
               <span>Date:</span>
-              <strong>{new Date(cartItem.event.date).toLocaleDateString()}</strong>
+              <strong>{new Date(event.date).toLocaleDateString()}</strong>
             </div>
             <div className="detail-row">
               <span>Tickets:</span>
@@ -131,20 +212,21 @@ const Booking = () => {
               <div className="review-section">
                 <h2>Review Your Booking</h2>
                 <div className="event-summary">
-                  <img src={cartItem.event.image} alt={cartItem.event.title} />
+                  <img src={event.image} alt={event.title} />
                   <div className="event-info">
-                    <h3>{cartItem.event.title}</h3>
+                    <h3>{event.title}</h3>
                     <div className="event-detail">
                       <Calendar size={18} />
-                      <span>{new Date(cartItem.event.date).toLocaleDateString()}</span>
+                      <span>{new Date(event.date).toLocaleDateString()}</span>
                     </div>
                     <div className="event-detail">
                       <MapPin size={18} />
-                      <span>{cartItem.event.location}</span>
+                      <span>{event.location}</span>
                     </div>
                     <div className="ticket-info">
-                      <span>Tickets: {cartItem.quantity}</span>
-                      <span>Price: ₹{cartItem.event.price} each</span>
+                      <span>Tickets: {quantity}</span>
+                      <span>Price: ₹{event.price} each</span>
+                      <span>Total: ₹{totalPrice}</span>
                     </div>
                   </div>
                 </div>
@@ -154,57 +236,37 @@ const Booking = () => {
 
             {step === 2 && (
               <div className="payment-section">
-                <h2>Payment Information</h2>
-                <form onSubmit={handlePayment} className="payment-form">
-                  <div className="form-group">
-                    <label>Card Number</label>
-                    <input
-                      type="text"
-                      placeholder="1234 5678 9012 3456"
-                      value={paymentData.cardNumber}
-                      onChange={(e) => setPaymentData({ ...paymentData, cardNumber: e.target.value })}
-                      required
-                      maxLength="19"
-                    />
+                <h2>Payment</h2>
+                <div className="order-summary-main">
+                  <h3>Order Summary</h3>
+                  <div className="summary-item">
+                    <span>Ticket Price (×{quantity})</span>
+                    <span>₹{event.price * quantity}</span>
                   </div>
-                  <div className="form-group">
-                    <label>Cardholder Name</label>
-                    <input
-                      type="text"
-                      placeholder="John Doe"
-                      value={paymentData.cardName}
-                      onChange={(e) => setPaymentData({ ...paymentData, cardName: e.target.value })}
-                      required
-                    />
+                  <div className="summary-item">
+                    <span>Service Fee</span>
+                    <span>₹0</span>
                   </div>
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Expiry Date</label>
-                      <input
-                        type="text"
-                        placeholder="MM/YY"
-                        value={paymentData.expiryDate}
-                        onChange={(e) => setPaymentData({ ...paymentData, expiryDate: e.target.value })}
-                        required
-                        maxLength="5"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>CVV</label>
-                      <input
-                        type="text"
-                        placeholder="123"
-                        value={paymentData.cvv}
-                        onChange={(e) => setPaymentData({ ...paymentData, cvv: e.target.value })}
-                        required
-                        maxLength="3"
-                      />
-                    </div>
+                  <div className="summary-total">
+                    <span>Total Amount</span>
+                    <span>₹{totalPrice}</span>
                   </div>
-                  <Button type="submit" fullWidth disabled={loading}>
-                    {loading ? 'Processing...' : `Pay ₹${totalAmount}`}
+
+                  <Button 
+                    fullWidth 
+                    disabled={loading || !window.Razorpay}
+                    onClick={handleRazorpayPayment}
+                    icon={<CreditCard size={20} />}
+                  >
+                    {loading ? 'Processing...' : 'Pay Securely'}
                   </Button>
-                </form>
+                  
+                  {!window.Razorpay && (
+                    <div className="payment-warning">
+                      <p>⚠️ Payment gateway blocked. Please disable ad blocker and refresh the page.</p>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
@@ -213,12 +275,8 @@ const Booking = () => {
             <div className="order-summary">
               <h3>Order Summary</h3>
               <div className="summary-item">
-                <span>Ticket Price</span>
-                <span>₹{cartItem.event.price}</span>
-              </div>
-              <div className="summary-item">
-                <span>Quantity</span>
-                <span>× {cartItem.quantity}</span>
+                <span>Ticket Price (×{quantity})</span>
+                <span>₹{event.price * quantity}</span>
               </div>
               <div className="summary-item">
                 <span>Service Fee</span>
@@ -226,7 +284,7 @@ const Booking = () => {
               </div>
               <div className="summary-total">
                 <span>Total</span>
-                <span>₹{totalAmount}</span>
+                <span>₹{totalPrice}</span>
               </div>
             </div>
           </div>
