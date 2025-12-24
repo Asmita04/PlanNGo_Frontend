@@ -150,11 +150,43 @@ const mockEvents = [
 const mockUsers = [
   { id: 1, email: "user@test.com", password: "user123", name: "John Doe", role: "user", phone: "+1234567890", avatar: "https://ui-avatars.com/api/?name=John+Doe" },
   { id: 2, email: "organizer@test.com", password: "org123", name: "Jane Smith", role: "organizer", phone: "+1234567891", avatar: "https://ui-avatars.com/api/?name=Jane+Smith" },
-  { id: 3, email: "admin@test.com", password: "admin123", name: "Admin User", role: "admin", phone: "+1234567892", avatar: "https://ui-avatars.com/api/?name=Admin+User" }
+  { id: 3, email: "admin@test.com", password: "admin123", name: "Admin User", role: "admin", phone: "+1234567892", avatar: "https://ui-avatars.com/api/?name=Admin+User" },
+  { id: 4, email: "organizer2@test.com", password: "org123", name: "Mike Johnson", role: "organizer", phone: "+1234567893", avatar: "https://ui-avatars.com/api/?name=Mike+Johnson" },
+  { id: 5, email: "organizer3@test.com", password: "org123", name: "Sarah Wilson", role: "organizer", phone: "+1234567894", avatar: "https://ui-avatars.com/api/?name=Sarah+Wilson" },
+  { id: 6, email: "organizer4@test.com", password: "org123", name: "David Brown", role: "organizer", phone: "+1234567895", avatar: "https://ui-avatars.com/api/?name=David+Brown" }
 ];
 
 let bookings = [];
 let bookingIdCounter = 1;
+
+// Mock predefined locations
+const mockLocations = [
+  { id: 1, name: 'New York, NY', country: 'USA', timezone: 'EST' },
+  { id: 2, name: 'Los Angeles, CA', country: 'USA', timezone: 'PST' },
+  { id: 3, name: 'Chicago, IL', country: 'USA', timezone: 'CST' },
+  { id: 4, name: 'Miami, FL', country: 'USA', timezone: 'EST' },
+  { id: 5, name: 'San Francisco, CA', country: 'USA', timezone: 'PST' },
+  { id: 6, name: 'Boston, MA', country: 'USA', timezone: 'EST' },
+  { id: 7, name: 'Austin, TX', country: 'USA', timezone: 'CST' },
+  { id: 8, name: 'Seattle, WA', country: 'USA', timezone: 'PST' }
+];
+
+// Mock organizer profiles
+let organizerProfiles = {
+  2: {
+    bio: 'Experienced event organizer specializing in tech conferences',
+    company: 'Tech Events Inc',
+    website: 'https://techevents.com',
+    location: 'San Francisco, CA',
+    verificationStatus: 'verified',
+    documents: [
+      { id: 1, name: 'Business License.pdf', uploadDate: '2024-01-15', status: 'verified' },
+      { id: 2, name: 'Insurance Certificate.pdf', uploadDate: '2024-01-16', status: 'verified' }
+    ]
+  }
+};
+
+let documentIdCounter = 3;
 
 export const api = {
   // Auth APIs
@@ -162,6 +194,38 @@ export const api = {
     await delay(500);
     const user = mockUsers.find(u => u.email === email && u.password === password);
     if (!user) throw new Error('Invalid credentials');
+    const { password: _, ...userWithoutPassword } = user;
+    return { user: userWithoutPassword, token: 'mock-token-' + user.id };
+  },
+
+  googleLogin: async (googleUser) => {
+    await delay(500);
+    const { email, name, picture, sub: googleId } = googleUser;
+    
+    // Check if user exists
+    let user = mockUsers.find(u => u.email === email);
+    
+    if (user) {
+      // Update user with Google info if not already set
+      if (!user.googleId) {
+        user.googleId = googleId;
+        user.avatar = picture;
+      }
+    } else {
+      // Create new user
+      user = {
+        id: mockUsers.length + 1,
+        email,
+        name,
+        role: 'user',
+        phone: '',
+        avatar: picture,
+        googleId,
+        password: null // Google users don't have passwords
+      };
+      mockUsers.push(user);
+    }
+    
     const { password: _, ...userWithoutPassword } = user;
     return { user: userWithoutPassword, token: 'mock-token-' + user.id };
   },
@@ -175,6 +239,31 @@ export const api = {
       ...userData,
       avatar: `https://ui-avatars.com/api/?name=${userData.name.replace(' ', '+')}`
     };
+    mockUsers.push(newUser);
+    const { password: _, ...userWithoutPassword } = newUser;
+    return { user: userWithoutPassword, token: 'mock-token-' + newUser.id };
+  },
+
+  googleSignup: async (googleUser, additionalData = {}) => {
+    await delay(500);
+    const { email, name, picture, sub: googleId } = googleUser;
+    
+    // Check if user already exists
+    const exists = mockUsers.find(u => u.email === email);
+    if (exists) throw new Error('Email already exists');
+    
+    const newUser = {
+      id: mockUsers.length + 1,
+      email,
+      name,
+      avatar: picture,
+      googleId,
+      password: null, // Google users don't have passwords
+      role: additionalData.role || 'user',
+      phone: additionalData.phone || '',
+      ...additionalData
+    };
+    
     mockUsers.push(newUser);
     const { password: _, ...userWithoutPassword } = newUser;
     return { user: userWithoutPassword, token: 'mock-token-' + newUser.id };
@@ -342,6 +431,72 @@ export const api = {
     const event = mockEvents.find(e => e.id === eventId);
     if (event) event.status = 'rejected';
     return event;
+  },
+
+  // Organizer Profile APIs
+  getOrganizerProfile: async (organizerId) => {
+    await delay(300);
+    return organizerProfiles[organizerId] || {
+      bio: '',
+      company: '',
+      website: '',
+      location: '',
+      verificationStatus: 'pending',
+      documents: []
+    };
+  },
+
+  updateOrganizerProfile: async (organizerId, profileData) => {
+    await delay(500);
+    organizerProfiles[organizerId] = {
+      ...organizerProfiles[organizerId],
+      ...profileData
+    };
+    return organizerProfiles[organizerId];
+  },
+
+  uploadProfilePicture: async (userId, formData) => {
+    await delay(1000);
+    // Simulate file upload
+    const mockUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent('Updated User')}&size=200`;
+    return { url: mockUrl };
+  },
+
+  uploadDocument: async (userId, formData) => {
+    await delay(1000);
+    // Simulate document upload
+    const newDocument = {
+      id: documentIdCounter++,
+      name: 'Document_' + Date.now() + '.pdf',
+      uploadDate: new Date().toISOString(),
+      status: 'pending'
+    };
+    
+    if (!organizerProfiles[userId]) {
+      organizerProfiles[userId] = { documents: [] };
+    }
+    if (!organizerProfiles[userId].documents) {
+      organizerProfiles[userId].documents = [];
+    }
+    
+    organizerProfiles[userId].documents.push(newDocument);
+    return newDocument;
+  },
+
+  // Location APIs
+  getPredefinedLocations: async () => {
+    await delay(300);
+    return mockLocations;
+  },
+
+  addLocation: async (locationData) => {
+    await delay(500);
+    const newLocation = {
+      id: mockLocations.length + 1,
+      ...locationData
+    };
+    mockLocations.push(newLocation);
+    return newLocation;
   },
 
   // Razorpay Payment APIs

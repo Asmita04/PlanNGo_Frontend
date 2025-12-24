@@ -50,6 +50,12 @@ export const AppProvider = ({ children }) => {
     setCart([]);
   };
 
+  const updateUser = (userData) => {
+    const updatedUser = { ...user, ...userData };
+    setUser(updatedUser);
+    localStorage.setItem('user', JSON.stringify(updatedUser));
+  };
+
   const toggleDarkMode = () => {
     setDarkMode(!darkMode);
   };
@@ -103,6 +109,7 @@ export const AppProvider = ({ children }) => {
       user,
       login,
       logout,
+      updateUser,
       darkMode,
       toggleDarkMode,
       notifications,

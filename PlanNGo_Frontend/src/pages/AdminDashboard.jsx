@@ -1,13 +1,27 @@
 import { useState, useEffect } from 'react';
+import { 
+  Calendar, CheckCircle, Clock, 
+  TrendingUp, BarChart3, PieChart, Activity,
+  ArrowUp, ArrowDown, Eye, Filter, DollarSign, XCircle, MapPin, Plus, Users
+} from 'lucide-react';
+import { 
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
+  LineChart, Line, PieChart as RechartsPie, Cell, Area, AreaChart, Pie, Legend
+} from 'recharts';
 import { api } from '../services/api';
-import { Users, Calendar, DollarSign, TrendingUp, CheckCircle, XCircle } from 'lucide-react';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import Button from '../components/Button';
 import './AdminDashboard.css';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('overview');
-  const [analytics, setAnalytics] = useState(null);
+  const [analytics, setAnalytics] = useState({
+    totalUsers: 0,
+    totalEvents: 0,
+    totalBookings: 0,
+    totalRevenue: 0,
+    pendingApprovals: 0,
+    categoryData: []
+  });
   const [users, setUsers] = useState([]);
   const [events, setEvents] = useState([]);
 
@@ -48,194 +62,200 @@ const AdminDashboard = () => {
     }
   };
 
-  const COLORS = ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
+  const statCards = [
+    {
+      title: 'Total Users',
+      value: analytics.totalUsers,
+      icon: Users,
+      color: 'from-blue-500 to-blue-600',
+      trend: 'up',
+      change: '+12%'
+    },
+    {
+      title: 'Total Events',
+      value: analytics.totalEvents,
+      icon: Calendar,
+      color: 'from-green-500 to-green-600',
+      trend: 'up',
+      change: '+8%'
+    },
+    {
+      title: 'Total Bookings',
+      value: analytics.totalBookings,
+      icon: CheckCircle,
+      color: 'from-purple-500 to-purple-600',
+      trend: 'up',
+      change: '+15%'
+    },
+    {
+      title: 'Total Revenue',
+      value: `₹${analytics.totalRevenue.toLocaleString()}`,
+      icon: DollarSign,
+      color: 'from-yellow-500 to-yellow-600',
+      trend: 'up',
+      change: '+20%'
+    }
+  ];
+
+  const chartData = [
+    { name: 'Jan', events: 12, bookings: 45 },
+    { name: 'Feb', events: 19, bookings: 52 },
+    { name: 'Mar', events: 15, bookings: 61 },
+    { name: 'Apr', events: 22, bookings: 58 },
+    { name: 'May', events: 18, bookings: 70 },
+    { name: 'Jun', events: 25, bookings: 85 }
+  ];
+
+  const pieData = analytics.categoryData.map((item, index) => ({
+    name: item.name,
+    value: item.value,
+    color: ['#6366f1', '#ec4899', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'][index % 6]
+  }));
 
   return (
     <div className="dashboard-page">
       <div className="container">
         <div className="dashboard-header">
           <div>
-            <h1>Admin Dashboard</h1>
-            <p>Manage platform users and events</p>
+            <h1>Dashboard Overview</h1>
+            <p>Welcome back! Here's what's happening with your platform.</p>
           </div>
         </div>
 
-        <div className="dashboard-tabs">
-          <button className={activeTab === 'overview' ? 'active' : ''} onClick={() => setActiveTab('overview')}>
-            <TrendingUp size={20} />
-            Overview
-          </button>
-          <button className={activeTab === 'users' ? 'active' : ''} onClick={() => setActiveTab('users')}>
-            <Users size={20} />
-            Users
-          </button>
-          <button className={activeTab === 'events' ? 'active' : ''} onClick={() => setActiveTab('events')}>
-            <Calendar size={20} />
-            Events
-          </button>
+        {/* Stats Grid */}
+        <div className="stats-grid">
+          {statCards.map((card, index) => {
+            const Icon = card.icon;
+            return (
+              <div key={card.title} className="stat-card">
+                <div className="stat-card-content">
+                  <div className="stat-header">
+                    <div className={`stat-icon bg-gradient-to-r ${card.color}`}>
+                      <Icon size={24} />
+                    </div>
+                    <div className="stat-trend">
+                      {card.trend === 'up' ? (
+                        <ArrowUp size={16} className="text-green-500" />
+                      ) : (
+                        <ArrowDown size={16} className="text-red-500" />
+                      )}
+                      <span className={card.trend === 'up' ? 'text-green-500' : 'text-red-500'}>
+                        {card.change}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="stat-info">
+                    <p>{card.title}</p>
+                    <h3>{card.value}</h3>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
 
-        <div className="dashboard-content">
-          {activeTab === 'overview' && analytics && (
-            <div className="overview-section">
-              <div className="stats-grid">
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: '#dbeafe' }}>
-                    <Users size={24} color="#3b82f6" />
-                  </div>
-                  <div className="stat-info">
-                    <p>Total Users</p>
-                    <h3>{analytics.totalUsers}</h3>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: '#ede9fe' }}>
-                    <Calendar size={24} color="#6366f1" />
-                  </div>
-                  <div className="stat-info">
-                    <p>Total Events</p>
-                    <h3>{analytics.totalEvents}</h3>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: '#d1fae5' }}>
-                    <DollarSign size={24} color="#10b981" />
-                  </div>
-                  <div className="stat-info">
-                    <p>Total Revenue</p>
-                    <h3>${analytics.totalRevenue.toLocaleString()}</h3>
-                  </div>
-                </div>
-                <div className="stat-card">
-                  <div className="stat-icon" style={{ background: '#fef3c7' }}>
-                    <TrendingUp size={24} color="#f59e0b" />
-                  </div>
-                  <div className="stat-info">
-                    <p>Pending Approvals</p>
-                    <h3>{analytics.pendingApprovals}</h3>
-                  </div>
-                </div>
-              </div>
-
-              <div className="chart-section">
-                <h3>Events by Category</h3>
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={analytics.categoryData}
-                      cx="50%"
-                      cy="50%"
-                      labelLine={false}
-                      label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
-                      outerRadius={100}
-                      fill="#8884d8"
-                      dataKey="value"
-                    >
-                      {analytics.categoryData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                      ))}
-                    </Pie>
-                    <Tooltip />
-                    <Legend />
-                  </PieChart>
-                </ResponsiveContainer>
-              </div>
+        {/* Charts Section */}
+        <div className="charts-grid">
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3>Events & Bookings Trend</h3>
             </div>
-          )}
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={chartData}>
+                <defs>
+                  <linearGradient id="colorEvents" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3}/>
+                    <stop offset="95%" stopColor="#6366f1" stopOpacity={0}/>
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
+                <XAxis dataKey="name" />
+                <YAxis />
+                <Tooltip />
+                <Area 
+                  type="monotone" 
+                  dataKey="events" 
+                  stroke="#6366f1" 
+                  fillOpacity={1} 
+                  fill="url(#colorEvents)"
+                  strokeWidth={3}
+                />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
 
-          {activeTab === 'users' && (
-            <div className="users-section">
-              <h2>All Users</h2>
-              <div className="users-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Name</th>
-                      <th>Email</th>
-                      <th>Phone</th>
-                      <th>Role</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {users.map(user => (
-                      <tr key={user.id}>
-                        <td>
-                          <div className="user-cell">
-                            <img src={user.avatar} alt={user.name} />
-                            <span>{user.name}</span>
-                          </div>
-                        </td>
-                        <td>{user.email}</td>
-                        <td>{user.phone}</td>
-                        <td>
-                          <span className={`role-badge ${user.role}`}>{user.role}</span>
-                        </td>
-                        <td>
-                          <Button size="sm" variant="outline">Manage</Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3>Event Categories</h3>
             </div>
-          )}
+            <ResponsiveContainer width="100%" height={300}>
+              <RechartsPie>
+                <Pie
+                  data={pieData}
+                  cx="50%"
+                  cy="50%"
+                  outerRadius={80}
+                  dataKey="value"
+                >
+                  {pieData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+                <Legend />
+              </RechartsPie>
+            </ResponsiveContainer>
+          </div>
+        </div>
 
-          {activeTab === 'events' && (
-            <div className="events-section">
-              <h2>All Events</h2>
-              <div className="events-table">
-                <table>
-                  <thead>
-                    <tr>
-                      <th>Event</th>
-                      <th>Organizer</th>
-                      <th>Date</th>
-                      <th>Bookings</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {events.map(event => (
-                      <tr key={event.id}>
-                        <td>
-                          <div className="event-cell">
-                            <img src={event.image} alt={event.title} />
-                            <span>{event.title}</span>
-                          </div>
-                        </td>
-                        <td>{event.organizer}</td>
-                        <td>{new Date(event.date).toLocaleDateString()}</td>
-                        <td>{event.booked}/{event.capacity}</td>
-                        <td>
-                          <span className={`status-badge ${event.status}`}>{event.status}</span>
-                        </td>
-                        <td>
-                          <div className="action-buttons">
-                            {event.status === 'pending' && (
-                              <>
-                                <button className="icon-btn success" onClick={() => handleApproveEvent(event.id)}>
-                                  <CheckCircle size={16} />
-                                </button>
-                                <button className="icon-btn danger" onClick={() => handleRejectEvent(event.id)}>
-                                  <XCircle size={16} />
-                                </button>
-                              </>
-                            )}
-                            {event.status !== 'pending' && (
-                              <Button size="sm" variant="outline">View</Button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
+        {/* Recent Events */}
+        <div className="recent-section">
+          <div className="section-header">
+            <h3>Recent Events</h3>
+            <Button variant="outline" size="sm">View All</Button>
+          </div>
+          <div className="events-table">
+            <div className="table-header">
+              <span>Event</span>
+              <span>Organizer</span>
+              <span>Date</span>
+              <span>Status</span>
+              <span>Actions</span>
             </div>
-          )}
+            {events.slice(0, 5).map(event => (
+              <div key={event.id} className="table-row">
+                <div className="event-info">
+                  <img src={event.image} alt={event.title} />
+                  <div>
+                    <h4>{event.title}</h4>
+                    <p>{event.category}</p>
+                  </div>
+                </div>
+                <span>{event.organizer}</span>
+                <span>{new Date(event.date).toLocaleDateString()}</span>
+                <span className={`status ${event.status}`}>{event.status}</span>
+                <div className="actions">
+                  {event.status === 'pending' && (
+                    <>
+                      <Button 
+                        size="sm" 
+                        onClick={() => handleApproveEvent(event.id)}
+                      >
+                        Approve
+                      </Button>
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => handleRejectEvent(event.id)}
+                      >
+                        Reject
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </div>

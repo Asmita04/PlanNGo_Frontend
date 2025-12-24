@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import './ContactUs.css';
 
 const ContactUs = () => {
@@ -8,6 +8,12 @@ const ContactUs = () => {
     subject: '',
     message: ''
   });
+  const [isVisible, setIsVisible] = useState(false);
+  const [focusedField, setFocusedField] = useState('');
+
+  useEffect(() => {
+    setIsVisible(true);
+  }, []);
 
   const handleChange = (e) => {
     setFormData({
@@ -27,84 +33,127 @@ const ContactUs = () => {
   return (
     <div className="contact-us">
       <div className="contact-hero">
+        <div className="hero-bg"></div>
         <div className="container">
-          <h1>Contact Us</h1>
-          <p>Get in touch with our team</p>
+          <h1 className="hero-title">Contact Us</h1>
+          <p className="hero-subtitle">Get in touch with our team</p>
         </div>
       </div>
 
       <div className="contact-content">
         <div className="container">
-          <div className="contact-grid">
+          <div className={`contact-grid ${isVisible ? 'visible' : ''}`}>
             <div className="contact-info">
-              <h2>Get in Touch</h2>
-              <p>Have questions about PlanNGo? We're here to help!</p>
+              <h2 className="info-title">Get in Touch</h2>
+              <p className="info-subtitle">Have questions about PlanNGo? We're here to help!</p>
               
-              <div className="contact-item">
-                <h3>📧 Email</h3>
-                <p>support@planngo.com</p>
+              <div className="contact-item item-1">
+                <div className="item-icon">📧</div>
+                <div className="item-content">
+                  <h3>Email</h3>
+                  <p>support@planngo.com</p>
+                </div>
               </div>
               
-              <div className="contact-item">
-                <h3>📞 Phone</h3>
-                <p>+1 (555) 123-4567</p>
+              <div className="contact-item item-2">
+                <div className="item-icon">📞</div>
+                <div className="item-content">
+                  <h3>Phone</h3>
+                  <p>+1 (555) 123-4567</p>
+                </div>
               </div>
               
-              <div className="contact-item">
-                <h3>📍 Address</h3>
-                <p>123 Event Street<br />City, State 12345</p>
+              <div className="contact-item item-3">
+                <div className="item-icon">📍</div>
+                <div className="item-content">
+                  <h3>Address</h3>
+                  <p>PlanNgo Technologies Pvt. Ltd.
+<br />Andheri West, Mumbai – 400053 <br /> Maharashtra, India</p>
+                </div>
               </div>
             </div>
 
             <form className="contact-form" onSubmit={handleSubmit}>
-              <h2>Send us a Message</h2>
-              
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Your Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                />
+              <div className="form-header">
+                <h2 className="form-title">Send us a Message</h2>
+                <div className="form-decoration"></div>
               </div>
               
-              <div className="form-group">
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Your Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                />
+              <div className={`form-group ${focusedField === 'name' ? 'focused' : ''} ${formData.name ? 'filled' : ''}`}>
+                <div className="input-wrapper">
+                  <div className="input-icon">👤</div>
+                  <input
+                    type="text"
+                    name="name"
+                    value={formData.name}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('name')}
+                    onBlur={() => setFocusedField('')}
+                    required
+                  />
+                  <label className="floating-label">Your Name</label>
+                  <div className="input-border"></div>
+                </div>
               </div>
               
-              <div className="form-group">
-                <input
-                  type="text"
-                  name="subject"
-                  placeholder="Subject"
-                  value={formData.subject}
-                  onChange={handleChange}
-                  required
-                />
+              <div className={`form-group ${focusedField === 'email' ? 'focused' : ''} ${formData.email ? 'filled' : ''}`}>
+                <div className="input-wrapper">
+                  <div className="input-icon">✉️</div>
+                  <input
+                    type="email"
+                    name="email"
+                    value={formData.email}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('email')}
+                    onBlur={() => setFocusedField('')}
+                    required
+                  />
+                  <label className="floating-label">Your Email</label>
+                  <div className="input-border"></div>
+                </div>
               </div>
               
-              <div className="form-group">
-                <textarea
-                  name="message"
-                  placeholder="Your Message"
-                  rows="5"
-                  value={formData.message}
-                  onChange={handleChange}
-                  required
-                ></textarea>
+              <div className={`form-group ${focusedField === 'subject' ? 'focused' : ''} ${formData.subject ? 'filled' : ''}`}>
+                <div className="input-wrapper">
+                  <div className="input-icon">📝</div>
+                  <input
+                    type="text"
+                    name="subject"
+                    value={formData.subject}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('subject')}
+                    onBlur={() => setFocusedField('')}
+                    required
+                  />
+                  <label className="floating-label">Subject</label>
+                  <div className="input-border"></div>
+                </div>
+              </div>
+              
+              <div className={`form-group textarea-group ${focusedField === 'message' ? 'focused' : ''} ${formData.message ? 'filled' : ''}`}>
+                <div className="input-wrapper">
+                  <div className="input-icon">💬</div>
+                  <textarea
+                    name="message"
+                    rows="5"
+                    value={formData.message}
+                    onChange={handleChange}
+                    onFocus={() => setFocusedField('message')}
+                    onBlur={() => setFocusedField('')}
+                    required
+                  ></textarea>
+                  <label className="floating-label">Your Message</label>
+                  <div className="input-border"></div>
+                </div>
               </div>
               
               <button type="submit" className="submit-btn">
-                Send Message
+                <div className="btn-content">
+                  <span className="btn-text">Send Message</span>
+                  <div className="btn-icon">🚀</div>
+                </div>
+                <div className="btn-ripple"></div>
+                <div className="btn-glow"></div>
               </button>
             </form>
           </div>

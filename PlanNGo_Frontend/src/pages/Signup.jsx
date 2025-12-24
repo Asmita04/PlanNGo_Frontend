@@ -2,8 +2,9 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { Mail, Lock, User, Phone, AlertCircle } from 'lucide-react';
+import { Mail, Lock, User, Phone, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Button from '../components/Button';
+import GoogleSignInButton from '../components/GoogleSignInButton';
 import './Auth.css';
 
 const Signup = () => {
@@ -19,6 +20,8 @@ const Signup = () => {
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const validate = () => {
     const newErrors = {};
@@ -63,107 +66,153 @@ const Signup = () => {
     }
   };
 
+  const handleGoogleSuccess = async (googleResponse) => {
+    setLoading(true);
+    try {
+      // Use the selected role from the form
+      const response = await api.googleSignup(googleResponse.user, {
+        role: formData.role,
+        phone: '' // Google doesn't provide phone, user can update later
+      });
+      login(response.user);
+      addNotification({ message: 'Google signup successful!', type: 'success' });
+      
+      if (response.user.role === 'organizer') navigate('/organizer/dashboard');
+      else navigate('/user/dashboard');
+    } catch (error) {
+      setErrors({ submit: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleGoogleError = (error) => {
+    setErrors({ submit: 'Google sign-up failed. Please try again.' });
+  };
+
   return (
-    <div className="auth-page">
-      <div className="auth-container">
-        <div className="auth-card slide-up">
-          <div className="auth-header">
-            <h1>Create Account</h1>
-            <p>Join PlanNGo and start your journey</p>
+    <div className="modern-auth-page">
+      <div className="auth-background">
+        <div className="floating-shapes">
+          <div className="shape shape-1"></div>
+          <div className="shape shape-2"></div>
+          <div className="shape shape-3"></div>
+        </div>
+      </div>
+      
+      <div className="modern-auth-container">
+        <div className="modern-auth-card">
+          <div className="modern-header">
+            <div className="logo-section">
+              <div className="logo-icon">✨</div>
+              <h1>Join PlanNGo</h1>
+            </div>
+            <p>Create your account in seconds</p>
           </div>
 
           {errors.submit && (
-            <div className="error-banner">
-              <AlertCircle size={20} />
+            <div className="modern-error">
+              <AlertCircle size={16} />
               <span>{errors.submit}</span>
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="auth-form">
-            <div className="form-group">
-              <label>Full Name</label>
-              <div className="input-wrapper">
-                <User size={20} />
+          <form onSubmit={handleSubmit} className="modern-form">
+            <div className="input-group">
+              <div className="modern-input-wrapper">
+                <User className="input-icon" size={18} />
                 <input
                   type="text"
                   name="name"
-                  placeholder="Enter your full name"
+                  placeholder="Full Name"
                   value={formData.name}
                   onChange={handleChange}
-                  className={errors.name ? 'error' : ''}
+                  className={`modern-input ${errors.name ? 'error' : ''}`}
                 />
               </div>
-              {errors.name && <span className="error-text">{errors.name}</span>}
+              {errors.name && <span className="error-message">{errors.name}</span>}
             </div>
 
-            <div className="form-group">
-              <label>Email Address</label>
-              <div className="input-wrapper">
-                <Mail size={20} />
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  className={errors.email ? 'error' : ''}
-                />
+            <div className="input-row">
+              <div className="input-group">
+                <div className="modern-input-wrapper">
+                  <Mail className="input-icon" size={18} />
+                  <input
+                    type="email"
+                    name="email"
+                    placeholder="Email Address"
+                    value={formData.email}
+                    onChange={handleChange}
+                    className={`modern-input ${errors.email ? 'error' : ''}`}
+                  />
+                </div>
+                {errors.email && <span className="error-message">{errors.email}</span>}
               </div>
-              {errors.email && <span className="error-text">{errors.email}</span>}
-            </div>
-
-            <div className="form-group">
-              <label>Phone Number</label>
-              <div className="input-wrapper">
-                <Phone size={20} />
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Enter your phone number"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  className={errors.phone ? 'error' : ''}
-                />
+              
+              <div className="input-group">
+                <div className="modern-input-wrapper">
+                  <Phone className="input-icon" size={18} />
+                  <input
+                    type="tel"
+                    name="phone"
+                    placeholder="Phone Number"
+                    value={formData.phone}
+                    onChange={handleChange}
+                    className={`modern-input ${errors.phone ? 'error' : ''}`}
+                  />
+                </div>
+                {errors.phone && <span className="error-message">{errors.phone}</span>}
               </div>
-              {errors.phone && <span className="error-text">{errors.phone}</span>}
             </div>
 
-            <div className="form-group">
-              <label>Password</label>
-              <div className="input-wrapper">
-                <Lock size={20} />
+            <div className="input-group">
+              <div className="modern-input-wrapper">
+                <Lock className="input-icon" size={18} />
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
-                  placeholder="Create a password"
+                  placeholder="Password"
                   value={formData.password}
                   onChange={handleChange}
-                  className={errors.password ? 'error' : ''}
+                  className={`modern-input ${errors.password ? 'error' : ''}`}
                 />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword(!showPassword)}
+                >
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
-              {errors.password && <span className="error-text">{errors.password}</span>}
+              {errors.password && <span className="error-message">{errors.password}</span>}
             </div>
-
-            <div className="form-group">
-              <label>Confirm Password</label>
-              <div className="input-wrapper">
-                <Lock size={20} />
+            
+            <div className="input-group">
+              <div className="modern-input-wrapper">
+                <Lock className="input-icon" size={18} />
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
-                  placeholder="Confirm your password"
+                  placeholder="Confirm Password"
                   value={formData.confirmPassword}
                   onChange={handleChange}
-                  className={errors.confirmPassword ? 'error' : ''}
+                  className={`modern-input ${errors.confirmPassword ? 'error' : ''}`}
                 />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                </button>
               </div>
-              {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
+              {errors.confirmPassword && <span className="error-message">{errors.confirmPassword}</span>}
             </div>
 
-            <div className="form-group">
-              <label>Account Type</label>
-              <div className="role-selector">
-                <label className={`role-option ${formData.role === 'user' ? 'active' : ''}`}>
+            <div className="role-section">
+              <label className="section-label">I want to</label>
+              <div className="role-cards">
+                <label className={`role-card ${formData.role === 'user' ? 'selected' : ''}`}>
                   <input
                     type="radio"
                     name="role"
@@ -171,12 +220,16 @@ const Signup = () => {
                     checked={formData.role === 'user'}
                     onChange={handleChange}
                   />
-                  <div>
-                    <strong>User</strong>
-                    <p>Browse and book events</p>
+                  <div className="role-content">
+                    <div className="role-icon">🎫</div>
+                    <div className="role-text">
+                      <span className="role-title">Attend Events</span>
+                      <span className="role-desc">Browse and book events</span>
+                    </div>
                   </div>
                 </label>
-                <label className={`role-option ${formData.role === 'organizer' ? 'active' : ''}`}>
+                
+                <label className={`role-card ${formData.role === 'organizer' ? 'selected' : ''}`}>
                   <input
                     type="radio"
                     name="role"
@@ -184,21 +237,44 @@ const Signup = () => {
                     checked={formData.role === 'organizer'}
                     onChange={handleChange}
                   />
-                  <div>
-                    <strong>Organizer</strong>
-                    <p>Create and manage events</p>
+                  <div className="role-content">
+                    <div className="role-icon">🎪</div>
+                    <div className="role-text">
+                      <span className="role-title">Create Events</span>
+                      <span className="role-desc">Organize and manage events</span>
+                    </div>
                   </div>
                 </label>
               </div>
             </div>
 
-            <Button type="submit" fullWidth disabled={loading}>
-              {loading ? 'Creating Account...' : 'Create Account'}
-            </Button>
+            <button type="submit" className="modern-submit-btn" disabled={loading}>
+              {loading ? (
+                <>
+                  <div className="btn-spinner"></div>
+                  Creating Account...
+                </>
+              ) : (
+                'Create Account'
+              )}
+            </button>
           </form>
 
-          <div className="auth-footer">
-            <p>Already have an account? <Link to="/login">Login</Link></p>
+          <div className="divider">
+            <span>or continue with</span>
+          </div>
+
+          <GoogleSignInButton 
+            onSuccess={handleGoogleSuccess}
+            onError={handleGoogleError}
+            text="Continue with Google"
+          />
+
+          <div className="modern-footer">
+            <p>Already have an account? <Link to="/login" className="login-link">Sign In</Link></p>
+            <p className="terms-text">
+              By signing up, you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>
+            </p>
           </div>
         </div>
       </div>

@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import { api } from '../services/api';
-import { CreditCard, Calendar, MapPin, Ticket, CheckCircle, Shield } from 'lucide-react';
+import { CreditCard, Calendar, MapPin, Ticket, CheckCircle } from 'lucide-react';
 import Button from '../components/Button';
 import './Booking.css';
 
@@ -31,9 +31,6 @@ const Booking = () => {
   }
 
   const { event, quantity, totalPrice } = bookingState;
-
-  // Debug logging
-  console.log('Booking state:', bookingState);
 
   useEffect(() => {
     const loadRazorpay = () => {
@@ -77,13 +74,12 @@ const Booking = () => {
     setLoading(true);
 
     try {
-      // For demo purposes, simulate payment without creating real Razorpay order
       const options = {
         key: 'rzp_test_Rv0f4eyqBgZIGr',
         amount: totalPrice * 100,
         currency: 'INR',
         name: 'PlanNGo',
-        description: `Booking for ${cartItem.event.title}`,
+        description: `Booking for ${event.title}`,
         image: 'https://cdn.razorpay.com/logos/7K3b6d18wHwKzL_medium.png',
         method: {
           netbanking: true,
