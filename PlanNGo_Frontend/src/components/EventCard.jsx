@@ -1,61 +1,157 @@
-import { Calendar, MapPin, DollarSign, Heart, Users } from 'lucide-react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useApp } from '../context/AppContext';
 import './EventCard.css';
 
 const EventCard = ({ event }) => {
   const navigate = useNavigate();
-  const { favorites, toggleFavorite, user } = useApp();
-  const isFavorite = favorites.includes(event.id);
+  const [showModal, setShowModal] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(false);
 
-  const handleFavorite = (e) => {
+  if (!event) return null;
+
+  const handleImageClick = (e) => {
     e.stopPropagation();
-    if (!user) {
-      navigate('/login');
-      return;
-    }
-    toggleFavorite(event.id);
+    setShowModal(true);
   };
 
-  return (
-    <div className="event-card" onClick={() => navigate(`/events/${event.id}`)}>
-      <div className="event-card-image">
-        <img src={event.image} alt={event.title} />
-        <button 
-          className={`favorite-btn ${isFavorite ? 'active' : ''}`}
-          onClick={handleFavorite}
-        >
-          <Heart size={20} fill={isFavorite ? '#ef4444' : 'none'} />
-        </button>
-        <span className="event-category">{event.category}</span>
-      </div>
-      
-      <div className="event-card-content">
-        <h3>{event.title}</h3>
-        <p className="event-description">{event.description}</p>
-        
-        <div className="event-details">
-          <div className="event-detail">
-            <Calendar size={16} />
-            <span>{new Date(event.date).toLocaleDateString()}</span>
-          </div>
-          <div className="event-detail">
-            <MapPin size={16} />
-            <span>{event.location}</span>
-          </div>
-        </div>
+  const handleBookClick = (e) => {
+    e.stopPropagation();
+    navigate(`/events/${event.id}/book`);
+  };
 
-        <div className="event-footer">
-          <div className="event-price">
-            <span>₹{event.price}</span>
-          </div>
-          <div className="event-capacity">
-            <Users size={16} />
-            <span>{event.booked}/{event.capacity}</span>
+  const handleFavoriteClick = (e) => {
+    e.stopPropagation();
+    setIsFavorited(!isFavorited);
+  };
+
+  const handleShareClick = (e) => {
+    e.stopPropagation();
+    if (navigator.share) {
+      navigator.share({
+        title: event.title,
+        text: `Check out this event: ${event.title}`,
+        url: window.location.href
+      });
+    } else {
+      navigator.clipboard.writeText(window.location.href);
+    }
+  };
+
+  const closeModal = () => {
+    setShowModal(false);
+  };
+
+  const booked = event.booked || 0;
+  const capacity = event.capacity || 0;
+  const isSoldOut = capacity > 0 && booked >= capacity;
+  const isPopular = booked > (capacity * 0.8);
+
+  return (
+    <>
+      <div className="event-card">
+        <div className="event-image" onClick={handleImageClick}>
+          <img 
+            src={event.image || '/api/placeholder/400/220'} 
+            alt={event.title || 'Event'}
+            onError={(e) => {
+              e.target.src = '/api/placeholder/400/220';
+            }}
+          />
+          {isPopular && <div className="event-badge">Popular</div>}
+          <button 
+            className={`favorite-button ${isFavorited ? 'favorited' : ''}`}
+            onClick={handleFavoriteClick}
+            title={isFavorited ? 'Remove from favorites' : 'Add to favorites'}
+          >
+            <span className="favorite-icon">
+              {isFavorited ? '♥' : '♡'}
+            </span>
+          </button>
+        </div>
+        <div className="event-info">
+          <h3 className="event-title">{event.title || 'Untitled Event'}</h3>
+          <p className="event-location">
+            {[event.venue, event.location].filter(Boolean).join(', ') || 'Location TBD'}
+          </p>
+          <p className="event-datetime">
+            {event.date ? new Date(event.date).toLocaleDateString() : 'Date TBD'}
+            {event.time && ` • ${event.time}`}
+          </p>
+          <div className="event-actions">
+            <button 
+              className="share-button"
+              onClick={handleShareClick}
+              title="Share event"
+            >
+              📤 Share
+            </button>
+            <button 
+              className={`book-button ${isSoldOut ? 'disabled' : ''}`}
+              onClick={handleBookClick}
+              disabled={isSoldOut}
+            >
+              {isSoldOut ? 'Sold Out' : `₹${event.price || 0}`}
+            </button>
           </div>
         </div>
       </div>
-    </div>
+
+      {showModal && (
+        <div className="modal-overlay" onClick={closeModal}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <button className="modal-close" onClick={closeModal}>×</button>
+            <div className="modal-image">
+              <img 
+                src={event.image || '/api/placeholder/400/220'} 
+                alt={event.title || 'Event'}
+              />
+            </div>
+            <div className="modal-details">
+              <h2>{event.title || 'Untitled Event'}</h2>
+              {event.organizer && <p className="modal-organizer">by {event.organizer}</p>}
+              {event.description && <p className="modal-description">{event.description}</p>}
+              <div className="modal-info">
+                {event.date && <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>}
+                {event.time && <p><strong>Time:</strong> {event.time}</p>}
+                {(event.venue || event.location) && (
+                  <p><strong>Location:</strong> {[event.venue, event.location].filter(Boolean).join(', ')}</p>
+                )}
+                {event.price && <p><strong>Price:</strong> ₹{event.price}</p>}
+                {capacity > 0 && (
+                  <p><strong>Availability:</strong> {capacity - booked} tickets left</p>
+                )}
+              </div>
+              <div className="modal-actions">
+                <button 
+                  className={`modal-like-btn ${isFavorited ? 'favorited' : ''}`}
+                  onClick={handleFavoriteClick}
+                >
+                  <span>{isFavorited ? '♥' : '♡'}</span>
+                  {isFavorited ? 'Liked' : 'Like'}
+                </button>
+                <button 
+                  className="modal-share-btn"
+                  onClick={handleShareClick}
+                >
+                  <span>📤</span>
+                  Share
+                </button>
+                <button 
+                  className="modal-book-btn"
+                  onClick={() => {
+                    setShowModal(false);
+                    navigate(`/events/${event.id}/book`);
+                  }}
+                  disabled={isSoldOut}
+                >
+                  {isSoldOut ? 'Sold Out' : 'Book Now'}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };
 
