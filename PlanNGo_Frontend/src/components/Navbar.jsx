@@ -33,6 +33,14 @@ const Navbar = () => {
 
           <div className={`navbar-links ${showMenu ? 'active' : ''}`}>
             <Link to="/events" onClick={() => setShowMenu(false)}>Events</Link>
+            <Link to="/about" onClick={() => setShowMenu(false)}>About Us</Link>
+            <Link to="/contact" onClick={() => setShowMenu(false)}>Contact Us</Link>
+            {user && user.role === 'admin' && (
+              <>
+                <Link to="/admin/events" onClick={() => setShowMenu(false)}>Event Approval</Link>
+                <Link to="/admin/organizers" onClick={() => setShowMenu(false)}>Organizer Verification</Link>
+              </>
+            )}
             {user && <Link to={getDashboardLink()} onClick={() => setShowMenu(false)}>Dashboard</Link>}
             {!user && <Link to="/login" onClick={() => setShowMenu(false)}>Login</Link>}
           </div>
@@ -78,8 +86,13 @@ const Navbar = () => {
                   </button>
                   <div className="user-dropdown">
                     <Link to={getDashboardLink()}>
-                      <User size={16} /> Profile
+                      <User size={16} /> Dashboard
                     </Link>
+                    {user.role === 'organizer' && (
+                      <Link to="/organizer/profile">
+                        <User size={16} /> Profile
+                      </Link>
+                    )}
                     <button onClick={handleLogout}>
                       <LogOut size={16} /> Logout
                     </button>
