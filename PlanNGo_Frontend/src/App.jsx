@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Events from './pages/Events';
 import EventDetails from './pages/EventDetails';
+import Review from './pages/Review';
 import Booking from './pages/Booking';
 import UserDashboard from './pages/UserDashboard';
 import OrganizerDashboard from './pages/OrganizerDashboard';
@@ -43,26 +44,14 @@ const AppRoutes = () => {
         <Route path="/signup" element={<Signup />} />
         <Route path="/events" element={<Events />} />
         <Route path="/events/:id" element={<EventDetails />} />
-        <Route path="/contact" element={<ContactUs />} />
-        <Route path="/about" element={<AboutUs />} />
-        <Route path="/admin/modern" element={<ModernAdminDashboard />} />
-        <Route 
-          path="/admin/events" 
+        <Route
+          path="/review"
           element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <EventApproval />
+            <ProtectedRoute>
+              <Review />
             </ProtectedRoute>
-          } 
+          }
         />
-        <Route 
-          path="/admin/organizers" 
-          element={
-            <ProtectedRoute allowedRoles={['admin']}>
-              <OrganizerVerification />
-            </ProtectedRoute>
-          } 
-        />
-        <Route path="/events/:id/book" element={<Booking />} />
         <Route path="/contact" element={<ContactUs />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/admin/modern" element={<ModernAdminDashboard />} />

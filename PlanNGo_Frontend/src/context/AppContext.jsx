@@ -14,15 +14,22 @@ export const AppProvider = ({ children }) => {
   const [notifications, setNotifications] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [cart, setCart] = useState([]);
+  const [bookingState, setBookingState] = useState({
+    event: null,
+    quantity: 1,
+    totalPrice: 0
+  });
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
     const savedDarkMode = localStorage.getItem('darkMode');
     const savedFavorites = localStorage.getItem('favorites');
+    const savedBookingState = localStorage.getItem('bookingState');
     
     if (savedUser) setUser(JSON.parse(savedUser));
     if (savedDarkMode) setDarkMode(JSON.parse(savedDarkMode));
     if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
+    if (savedBookingState) setBookingState(JSON.parse(savedBookingState));
   }, []);
 
   useEffect(() => {
@@ -78,6 +85,20 @@ export const AppProvider = ({ children }) => {
     });
   };
 
+  const updateBooking = (event, quantity) => {
+    const totalPrice = event.price * quantity;
+    const newBookingState = { event, quantity, totalPrice };
+    console.log('Updating booking state:', newBookingState);
+    setBookingState(newBookingState);
+    // Also save to localStorage for persistence
+    localStorage.setItem('bookingState', JSON.stringify(newBookingState));
+  };
+
+  const clearBooking = () => {
+    setBookingState({ event: null, quantity: 1, totalPrice: 0 });
+    localStorage.removeItem('bookingState');
+  };
+
   const addToCart = (item) => {
     setCart(prev => [...prev, { ...item, id: Date.now() }]);
   };
@@ -106,7 +127,10 @@ export const AppProvider = ({ children }) => {
       cart,
       addToCart,
       removeFromCart,
-      clearCart
+      clearCart,
+      bookingState,
+      updateBooking,
+      clearBooking
     }}>
       {children}
     </AppContext.Provider>
