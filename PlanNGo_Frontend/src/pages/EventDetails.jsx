@@ -44,8 +44,14 @@ const EventDetails = () => {
       navigate('/login');
       return;
     }
+    
+    console.log('Updating booking with:', { event, quantity });
     updateBooking(event, quantity);
-    navigate('/booking');
+    
+    // Small delay to ensure state is updated
+    setTimeout(() => {
+      navigate('/review');
+    }, 100);
   };
 
   const handleShare = () => {

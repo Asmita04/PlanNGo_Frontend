@@ -24,10 +24,12 @@ export const AppProvider = ({ children }) => {
     const savedUser = localStorage.getItem('user');
     const savedDarkMode = localStorage.getItem('darkMode');
     const savedFavorites = localStorage.getItem('favorites');
+    const savedBookingState = localStorage.getItem('bookingState');
     
     if (savedUser) setUser(JSON.parse(savedUser));
     if (savedDarkMode) setDarkMode(JSON.parse(savedDarkMode));
     if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
+    if (savedBookingState) setBookingState(JSON.parse(savedBookingState));
   }, []);
 
   useEffect(() => {
@@ -85,11 +87,16 @@ export const AppProvider = ({ children }) => {
 
   const updateBooking = (event, quantity) => {
     const totalPrice = event.price * quantity;
-    setBookingState({ event, quantity, totalPrice });
+    const newBookingState = { event, quantity, totalPrice };
+    console.log('Updating booking state:', newBookingState);
+    setBookingState(newBookingState);
+    // Also save to localStorage for persistence
+    localStorage.setItem('bookingState', JSON.stringify(newBookingState));
   };
 
   const clearBooking = () => {
     setBookingState({ event: null, quantity: 1, totalPrice: 0 });
+    localStorage.removeItem('bookingState');
   };
 
   const addToCart = (item) => {

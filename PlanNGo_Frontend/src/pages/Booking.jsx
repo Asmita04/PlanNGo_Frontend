@@ -9,7 +9,7 @@ import './Booking.css';
 const Booking = () => {
   const navigate = useNavigate();
   const { user, addNotification, bookingState, clearBooking } = useApp();
-  const [step, setStep] = useState(1);
+  const [step, setStep] = useState(2); // Start directly at payment step
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
@@ -190,51 +190,25 @@ const Booking = () => {
         <div className="booking-steps">
           <div className={`step ${step >= 1 ? 'active' : ''}`}>
             <span>1</span>
-            <p>Review</p>
+            <p>Payment</p>
           </div>
           <div className={`step ${step >= 2 ? 'active' : ''}`}>
             <span>2</span>
-            <p>Payment</p>
-          </div>
-          <div className={`step ${step >= 3 ? 'active' : ''}`}>
-            <span>3</span>
             <p>Confirmation</p>
           </div>
         </div>
 
         <div className="booking-content">
           <div className="booking-main">
-            {step === 1 && (
-              <div className="review-section">
-                <h2>Review Your Booking</h2>
-                <div className="event-summary">
-                  <img src={event.image} alt={event.title} />
-                  <div className="event-info">
-                    <h3>{event.title}</h3>
-                    <div className="event-detail">
-                      <Calendar size={18} />
-                      <span>{new Date(event.date).toLocaleDateString()}</span>
-                    </div>
-                    <div className="event-detail">
-                      <MapPin size={18} />
-                      <span>{event.location}</span>
-                    </div>
-                    <div className="ticket-info">
-                      <span>Tickets: {quantity}</span>
-                      <span>Price: ₹{event.price} each</span>
-                      <span>Total: ₹{totalPrice}</span>
-                    </div>
-                  </div>
-                </div>
-                <Button fullWidth onClick={() => setStep(2)}>Proceed to Payment</Button>
-              </div>
-            )}
-
             {step === 2 && (
               <div className="payment-section">
                 <h2>Payment</h2>
                 <div className="order-summary-main">
                   <h3>Order Summary</h3>
+                  <div className="event-details-summary">
+                    <h4>{event.title}</h4>
+                    <p>{new Date(event.date).toLocaleDateString()} • {event.location}</p>
+                  </div>
                   <div className="summary-item">
                     <span>Ticket Price (×{quantity})</span>
                     <span>₹{event.price * quantity}</span>
@@ -269,14 +243,22 @@ const Booking = () => {
 
           <div className="booking-sidebar">
             <div className="order-summary">
-              <h3>Order Summary</h3>
-              <div className="summary-item">
-                <span>Ticket Price (×{quantity})</span>
-                <span>₹{event.price * quantity}</span>
+              <h3>Booking Details</h3>
+              <div className="event-info-sidebar">
+                <img src={event.image} alt={event.title} className="event-thumb" />
+                <div>
+                  <h4>{event.title}</h4>
+                  <p>{new Date(event.date).toLocaleDateString()}</p>
+                  <p>{event.location}</p>
+                </div>
               </div>
               <div className="summary-item">
-                <span>Service Fee</span>
-                <span>₹0</span>
+                <span>Tickets</span>
+                <span>×{quantity}</span>
+              </div>
+              <div className="summary-item">
+                <span>Price per ticket</span>
+                <span>₹{event.price}</span>
               </div>
               <div className="summary-total">
                 <span>Total</span>

@@ -285,6 +285,68 @@ body.dark-mode .order-summary-main .summary-total {
   color: #6366f1;
 }
 
+.event-details-summary {
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+body.dark-mode .event-details-summary {
+  border-bottom-color: #374151;
+}
+
+.event-details-summary h4 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+body.dark-mode .event-details-summary h4 {
+  color: #f9fafb;
+}
+
+.event-details-summary p {
+  color: #6b7280;
+  margin: 0;
+}
+
+.event-info-sidebar {
+  display: flex;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #e5e7eb;
+  margin-bottom: 1rem;
+}
+
+body.dark-mode .event-info-sidebar {
+  border-bottom-color: #374151;
+}
+
+.event-thumb {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 8px;
+}
+
+.event-info-sidebar h4 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 0.25rem;
+}
+
+body.dark-mode .event-info-sidebar h4 {
+  color: #f9fafb;
+}
+
+.event-info-sidebar p {
+  font-size: 0.875rem;
+  color: #6b7280;
+  margin: 0;
+}
+
 .payment-warning {
   padding: 1rem;
   background: #fef3c7;
