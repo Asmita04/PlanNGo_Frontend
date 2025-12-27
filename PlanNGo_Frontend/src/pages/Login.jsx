@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { api } from '../services/api';
+import { api } from '../services';
 import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Button from '../components/Button';
 import GoogleSignInButton from '../components/GoogleSignInButton';

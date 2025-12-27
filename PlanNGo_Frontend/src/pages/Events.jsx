@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Search, Filter, Loader } from 'lucide-react';
-import { api } from '../services/api';
+import { api } from '../services';
 import EventCard from '../components/EventCard';
 import './Events.css';
 
@@ -28,7 +28,7 @@ const Events = () => {
 
   const loadEvents = async () => {
     try {
-      const data = await api.getEvents();
+      const data = await api.getAllEvents();
       setEvents(data);
       setFilteredEvents(data);
     } catch (error) {

@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import { api } from '../services/api';
+import { api } from '../services';
 import { Plus, Calendar, Users, DollarSign, TrendingUp, Edit, Trash2 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import Button from '../components/Button';
@@ -33,15 +33,16 @@ const OrganizerDashboard = () => {
 
   const loadData = async () => {
     try {
-      const allEvents = await api.getEvents();
+      const allEvents = await api.getAllEvents();
       const organizerEvents = allEvents.filter(e => e.organizerId === user.id);
       setEvents(organizerEvents);
       
-      const analyticsData = await api.getOrganizerAnalytics(user.id);
-      setAnalytics(analyticsData);
+      // Note: These methods need to be implemented in the backend
+      // const analyticsData = await api.getOrganizerAnalytics(user.id);
+      // setAnalytics(analyticsData);
       
-      const locationData = await api.getPredefinedLocations();
-      setLocations(locationData);
+      // const locationData = await api.getPredefinedLocations();
+      // setLocations(locationData);
     } catch (error) {
       console.error('Error loading data:', error);
     }

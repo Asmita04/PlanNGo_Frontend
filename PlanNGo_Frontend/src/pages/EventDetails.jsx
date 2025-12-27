@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Calendar, MapPin, Clock, DollarSign, Users, Heart, Share2, Loader } from 'lucide-react';
-import { api } from '../services/api';
+import { api } from '../services';
 import { useApp } from '../context/AppContext';
 import Button from '../components/Button';
 import TravelOptions from '../components/TravelOptions';

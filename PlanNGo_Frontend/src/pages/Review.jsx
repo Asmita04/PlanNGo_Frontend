@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { api } from '../services/api';
+import { api } from '../services';
 import { CreditCard, Calendar, MapPin, ArrowLeft } from 'lucide-react';
 import Button from '../components/Button';
 import './Review.css';

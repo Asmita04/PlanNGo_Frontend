@@ -8,7 +8,7 @@ import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, 
   LineChart, Line, PieChart as RechartsPie, Cell, Area, AreaChart, Pie, Legend
 } from 'recharts';
-import { api } from '../services/api';
+import { api } from '../services';
 import Button from '../components/Button';
 import './AdminDashboard.css';
 
@@ -31,13 +31,14 @@ const AdminDashboard = () => {
 
   const loadData = async () => {
     try {
-      const analyticsData = await api.getAdminAnalytics();
-      setAnalytics(analyticsData);
+      // Note: These admin-specific methods need to be implemented in the backend
+      // const analyticsData = await api.getAdminAnalytics();
+      // setAnalytics(analyticsData);
       
       const usersData = await api.getAllUsers();
       setUsers(usersData);
       
-      const eventsData = await api.getEvents();
+      const eventsData = await api.getAllEvents();
       setEvents(eventsData);
     } catch (error) {
       console.error('Error loading data:', error);
@@ -46,7 +47,8 @@ const AdminDashboard = () => {
 
   const handleApproveEvent = async (id) => {
     try {
-      await api.approveEvent(id);
+      // Note: This method needs to be implemented in the backend
+      // await api.approveEvent(id);
       loadData();
     } catch (error) {
       console.error('Error approving event:', error);
@@ -55,7 +57,8 @@ const AdminDashboard = () => {
 
   const handleRejectEvent = async (id) => {
     try {
-      await api.rejectEvent(id);
+      // Note: This method needs to be implemented in the backend
+      // await api.rejectEvent(id);
       loadData();
     } catch (error) {
       console.error('Error rejecting event:', error);
