@@ -1,5 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AppProvider, useApp } from './context/AppContext';
+import { GoogleOAuthProvider } from '@react-oauth/google';
+import { AppProvider } from './context/AppContext';
+import ProtectedRoute from './components/ProtectedRoute';
+import ClientProfile from './pages/ClientProfile';
 import Navbar from './components/Navbar';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
@@ -17,21 +20,6 @@ import ContactUs from './pages/ContactUs';
 import AboutUs from './pages/AboutUs';
 import EventApproval from './components/EventApproval';
 import OrganizerVerification from './components/OrganizerVerification';
-
-// Protected Route Component
-const ProtectedRoute = ({ children, allowedRoles }) => {
-  const { user } = useApp();
-
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
-
-  if (allowedRoles && !allowedRoles.includes(user.role)) {
-    return <Navigate to="/" replace />;
-  }
-
-  return children;
-};
 
 // App Routes Component
 const AppRoutes = () => {
@@ -82,8 +70,16 @@ const AppRoutes = () => {
         <Route
           path="/user/dashboard"
           element={
-            <ProtectedRoute allowedRoles={['user']}>
+            <ProtectedRoute allowedRoles={['client']}>
               <UserDashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/user/profile"
+          element={
+            <ProtectedRoute allowedRoles={['client']}>
+              <ClientProfile />
             </ProtectedRoute>
           }
         />
@@ -120,9 +116,11 @@ const AppRoutes = () => {
 // Main App Component
 function App() {
   return (
-    <AppProvider>
-      <AppRoutes />
-    </AppProvider>
+    <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
+      <AppProvider>
+        <AppRoutes />
+      </AppProvider>
+    </GoogleOAuthProvider>
   );
 }
 

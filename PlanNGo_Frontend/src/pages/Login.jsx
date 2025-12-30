@@ -6,6 +6,7 @@ import { Mail, Lock, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import Button from '../components/Button';
 import GoogleSignInButton from '../components/GoogleSignInButton';
 import './Auth.css';
+import '../styles/ModernAuth.css';
 
 const Login = () => {
   const navigate = useNavigate();
@@ -65,21 +66,30 @@ const Login = () => {
   };
 
   const handleGoogleSuccess = async (googleResponse) => {
-    setLoading(true);
-    try {
-      const response = await api.googleLogin(googleResponse.user);
-      login(response.user);
-      addNotification({ message: 'Google login successful!', type: 'success' });
+  setLoading(true);
+  try {
+    // ✅ Send ONLY the ID token
+    const response = await api.googleLogin({
+      idToken: googleResponse.credential,
+      role: formData.role || 'Client' // default to 'user' role
+    });
 
-      if (response.user.role === 'admin') navigate('/admin/dashboard');
-      else if (response.user.role === 'organizer') navigate('/organizer/dashboard');
-      else navigate('/user/dashboard');
-    } catch (error) {
-      setErrors({ submit: error.message });
-    } finally {
-      setLoading(false);
-    }
-  };
+    login(response.user);
+    addNotification({
+      message: 'Google login successful!',
+      type: 'success',
+    });
+
+    if (response.user.role === 'admin') navigate('/admin/dashboard');
+    else if (response.user.role === 'organizer') navigate('/organizer/dashboard');
+    else navigate('/user/dashboard');
+
+  } catch (error) {
+    setErrors({ submit: error.message });
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleGoogleError = (error) => {
     setErrors({ submit: 'Google sign-in failed. Please try again.' });

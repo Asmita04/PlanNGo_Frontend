@@ -1,10 +1,10 @@
-export const API_BASE_URL = 'http://localhost:8080/api';
+export const API_BASE_URL = 'http://localhost:5075/api';
 
 export const API_ENDPOINTS = {
   // Auth endpoints
-  LOGIN: '/auth/login',
-  SIGNUP: '/auth/signup',
-  GOOGLE_LOGIN: '/auth/google',
+  LOGIN: '/Auth/login',
+  SIGNUP: '/Auth/signup',
+  GOOGLE_LOGIN: '/Auth/google',
   
   // Events endpoints
   EVENTS: '/events',
