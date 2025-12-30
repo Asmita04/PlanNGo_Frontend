@@ -15,6 +15,7 @@ export const api = {
   login: authService.login,
   signup: authService.signup,
   googleLogin: authService.googleLogin,
+  googleSignup: (googleUser, additionalData) => authService.googleLogin(googleUser, additionalData),
   logout: authService.logout,
   getCurrentUser: authService.getCurrentUser,
   getToken: authService.getToken,

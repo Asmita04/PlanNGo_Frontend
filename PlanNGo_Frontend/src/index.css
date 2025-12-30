@@ -27,22 +27,6 @@ body {
   line-height: 1.6;
 }
 
-body.dark-mode {
-  background-color: #6BAEB5;
-  color: #236368;
-}
-
-body.dark-mode {
-  --primary: #6BAEB5;
-  --primary-dark: #236368;
-  --secondary: #E09F3E;
-  --success: #138A36;
-  --danger: #9E2A2B;
-  --light: #236368;
-  --dark: #6BAEB5;
-  --border: #236368;
-}
-
 a {
   text-decoration: none;
   color: inherit;
@@ -83,14 +67,6 @@ input, textarea, select {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
-}
-
-body.dark-mode ::-webkit-scrollbar-track {
-  background: #1f2937;
-}
-
-body.dark-mode ::-webkit-scrollbar-thumb {
-  background: #4b5563;
 }
 
 /* Animations */

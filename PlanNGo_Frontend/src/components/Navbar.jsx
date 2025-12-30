@@ -1,11 +1,11 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { Calendar, Moon, Sun, Bell, User, LogOut, Menu, X } from 'lucide-react';
+import { Calendar, Bell, User, LogOut, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 import './Navbar.css';
 
 const Navbar = () => {
-  const { user, logout, darkMode, toggleDarkMode, notifications } = useApp();
+  const { user, logout, notifications } = useApp();
   const navigate = useNavigate();
   const [showMenu, setShowMenu] = useState(false);
   const [showNotifications, setShowNotifications] = useState(false);
@@ -46,10 +46,6 @@ const Navbar = () => {
           </div>
 
           <div className="navbar-actions">
-            <button className="icon-btn" onClick={toggleDarkMode}>
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-
             {user && (
               <>
                 <div className="notification-wrapper">
@@ -85,9 +81,11 @@ const Navbar = () => {
                     <span>{user.name}</span>
                   </button>
                   <div className="user-dropdown">
-                    <Link to={getDashboardLink()}>
-                      <User size={16} /> Dashboard
-                    </Link>
+                    {user.role === 'client' && (
+                      <Link to="/user/profile">
+                        <User size={16} /> Profile
+                      </Link>
+                    )}
                     {user.role === 'organizer' && (
                       <Link to="/organizer/profile">
                         <User size={16} /> Profile

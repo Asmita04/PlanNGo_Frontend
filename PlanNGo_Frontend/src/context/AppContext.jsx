@@ -10,7 +10,6 @@ export const useApp = () => {
 
 export const AppProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [darkMode, setDarkMode] = useState(false);
   const [notifications, setNotifications] = useState([]);
   const [favorites, setFavorites] = useState([]);
   const [cart, setCart] = useState([]);
@@ -22,24 +21,15 @@ export const AppProvider = ({ children }) => {
 
   useEffect(() => {
     const savedUser = localStorage.getItem('user');
-    const savedDarkMode = localStorage.getItem('darkMode');
     const savedFavorites = localStorage.getItem('favorites');
     const savedBookingState = localStorage.getItem('bookingState');
     
-    if (savedUser) setUser(JSON.parse(savedUser));
-    if (savedDarkMode) setDarkMode(JSON.parse(savedDarkMode));
-    if (savedFavorites) setFavorites(JSON.parse(savedFavorites));
-    if (savedBookingState) setBookingState(JSON.parse(savedBookingState));
+    if (savedUser && savedUser !== 'undefined') setUser(JSON.parse(savedUser));
+    if (savedFavorites && savedFavorites !== 'undefined') setFavorites(JSON.parse(savedFavorites));
+    if (savedBookingState && savedBookingState !== 'undefined') setBookingState(JSON.parse(savedBookingState));
   }, []);
 
-  useEffect(() => {
-    if (darkMode) {
-      document.body.classList.add('dark-mode');
-    } else {
-      document.body.classList.remove('dark-mode');
-    }
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-  }, [darkMode]);
+
 
   const login = (userData) => {
     setUser(userData);
@@ -58,9 +48,7 @@ export const AppProvider = ({ children }) => {
     localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
-  const toggleDarkMode = () => {
-    setDarkMode(!darkMode);
-  };
+
 
   const addNotification = (notification) => {
     const newNotification = {
@@ -117,8 +105,6 @@ export const AppProvider = ({ children }) => {
       login,
       logout,
       updateUser,
-      darkMode,
-      toggleDarkMode,
       notifications,
       addNotification,
       removeNotification,
