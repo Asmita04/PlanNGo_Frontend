@@ -33,6 +33,14 @@ const AppRoutes = () => {
         <Route path="/events" element={<Events />} />
         <Route path="/events/:id" element={<EventDetails />} />
         <Route
+          path="/events/:id/book"
+          element={
+            <ProtectedRoute allowedRoles={['client']}>
+              <Booking />
+            </ProtectedRoute>
+          }
+        />
+        <Route
           path="/review"
           element={
             <ProtectedRoute>

@@ -1,4 +1,4 @@
-export const API_BASE_URL = 'http://localhost:5075/api';
+export const API_BASE_URL = 'http://localhost:8081/api';
 
 export const API_ENDPOINTS = {
   // Auth endpoints
@@ -6,10 +6,15 @@ export const API_ENDPOINTS = {
   SIGNUP: '/Auth/signup',
   GOOGLE_LOGIN: '/Auth/google',
   
+  // Venues endpoints
+  VENUES: '/Venues',
+  VENUE_BY_ID: (id) => `/Venues/${id}`,
+  AVAILABLE_VENUES: '/Venues/available',
+  
   // Events endpoints
-  EVENTS: '/events',
-  EVENT_BY_ID: (id) => `/events/${id}`,
-  EVENTS_BY_ORGANIZER: (organizerId) => `/events/organizer/${organizerId}`,
+  EVENTS: '/Events',
+  EVENT_BY_ID: (id) => `/Events/${id}`,
+  EVENTS_BY_ORGANIZER: (organizerId) => `/Events/organizer/${organizerId}`,
   
   // Bookings endpoints
   BOOKINGS: '/bookings',

@@ -7,7 +7,7 @@ const GoogleSignInButton = ({ onSuccess, onError, text }) => {
         onSuccess={onSuccess}
         onError={onError}
         text="signup_with"
-        width="100%"
+        width={400}
       />
     </div>
   );
