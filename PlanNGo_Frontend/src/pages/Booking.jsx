@@ -1,36 +1,51 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
-import { api } from '../services/api';
+import { api } from '../services';
 import { CreditCard, Calendar, MapPin, Ticket, CheckCircle } from 'lucide-react';
 import Button from '../components/Button';
 import './Booking.css';
 
 const Booking = () => {
   const navigate = useNavigate();
+  const { id: eventId } = useParams();
   const { user, addNotification, bookingState, clearBooking } = useApp();
-  const [step, setStep] = useState(2); // Start directly at payment step
+  const [step, setStep] = useState(2);
   const [booking, setBooking] = useState(null);
   const [loading, setLoading] = useState(false);
   const [razorpayLoaded, setRazorpayLoaded] = useState(false);
+  const [event, setEvent] = useState(null);
+  const [quantity, setQuantity] = useState(1);
+  const [totalPrice, setTotalPrice] = useState(0);
 
-  if (!user) {
-    navigate('/login');
-    return null;
-  }
+  useEffect(() => {
+    const loadEventData = async () => {
+      if (bookingState.event) {
+        setEvent(bookingState.event);
+        setQuantity(bookingState.quantity || 1);
+        setTotalPrice(bookingState.totalPrice || bookingState.event.ticketPrice);
+      } else if (eventId) {
+        try {
+          const eventData = await api.getEventById(eventId);
+          setEvent(eventData);
+          setQuantity(1);
+          setTotalPrice(eventData.ticketPrice || eventData.price || 0);
+        } catch (error) {
+          console.error('Error loading event:', error);
+          addNotification({ message: 'Failed to load event details', type: 'error' });
+          navigate('/events');
+        }
+      }
+    };
 
-  if (!bookingState.event) {
-    return (
-      <div className="empty-cart">
-        <Ticket size={64} />
-        <h2>No event selected</h2>
-        <p>Please select an event to book tickets</p>
-        <Button onClick={() => navigate('/events')}>Browse Events</Button>
-      </div>
-    );
-  }
+    loadEventData();
+  }, [eventId, bookingState]);
 
-  const { event, quantity, totalPrice } = bookingState;
+  useEffect(() => {
+    if (event) {
+      setTotalPrice((event.ticketPrice || event.price || 0) * quantity);
+    }
+  }, [event, quantity]);
 
   useEffect(() => {
     const loadRazorpay = () => {
@@ -64,6 +79,19 @@ const Booking = () => {
 
     loadRazorpay();
   }, []);
+
+  if (!user) {
+    navigate('/login');
+    return null;
+  }
+
+  if (!event) {
+    return (
+      <div className="loading-container">
+        <p>Loading event details...</p>
+      </div>
+    );
+  }
 
   const handleRazorpayPayment = async () => {
     if (!window.Razorpay) {

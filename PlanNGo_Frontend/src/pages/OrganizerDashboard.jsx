@@ -13,14 +13,16 @@ const OrganizerDashboard = () => {
   const [events, setEvents] = useState([]);
   const [analytics, setAnalytics] = useState(null);
   const [locations, setLocations] = useState([]);
+  const [venues, setVenues] = useState([]);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingEvent, setEditingEvent] = useState(null);
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     category: 'Technology',
     date: '',
     time: '',
-    location: '',
     venue: '',
     price: '',
     capacity: '',
@@ -33,40 +35,107 @@ const OrganizerDashboard = () => {
 
   const loadData = async () => {
     try {
-      const allEvents = await api.getAllEvents();
-      const organizerEvents = allEvents.filter(e => e.organizerId === user.id);
+      // Get organizer ID from user context or fetch organizer data
+      const organizerId = user.organizerId || 1; // Use actual organizer ID
+      const organizerEvents = await api.getEventsByOrganizer(organizerId);
       setEvents(organizerEvents);
       
-      // Note: These methods need to be implemented in the backend
-      // const analyticsData = await api.getOrganizerAnalytics(user.id);
-      // setAnalytics(analyticsData);
-      
-      // const locationData = await api.getPredefinedLocations();
-      // setLocations(locationData);
+      // Fetch available venues
+      const venuesData = await api.getAvailableVenues();
+      setVenues(venuesData);
     } catch (error) {
       console.error('Error loading data:', error);
     }
   };
 
+  const handleVenueChange = (venueId) => {
+    const selectedVenue = venues.find(v => v.venueId === parseInt(venueId));
+    setFormData({ 
+      ...formData, 
+      venue: venueId,
+      capacity: selectedVenue ? selectedVenue.capacity.toString() : ''
+    });
+  };
+
+  const handleEditEvent = (event) => {
+    setEditingEvent(event);
+    const selectedVenue = venues.find(v => v.venueName === event.venueName);
+    setFormData({
+      title: event.title,
+      description: event.description,
+      category: event.category,
+      date: new Date(event.startDate).toISOString().split('T')[0],
+      time: new Date(event.startDate).toTimeString().slice(0, 5),
+      venue: selectedVenue ? selectedVenue.venueId.toString() : '',
+      price: event.ticketPrice?.toString() || '',
+      capacity: event.availableTickets?.toString() || '',
+      image: event.eventImage || ''
+    });
+    setShowEditModal(true);
+  };
+
+  const handleUpdateEvent = async (e) => {
+    e.preventDefault();
+    try {
+      const eventData = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        startDate: new Date(`${formData.date}T${formData.time}`).toISOString(),
+        endDate: new Date(`${formData.date}T${formData.time}`).toISOString(),
+        venueId: parseInt(formData.venue),
+        ticketPrice: parseFloat(formData.price),
+        availableTickets: parseInt(formData.capacity),
+        eventImage: formData.image
+      };
+      
+      console.log('Updating event:', editingEvent.eventId, eventData);
+      await api.updateEvent(editingEvent.eventId, eventData);
+      addNotification({ message: 'Event updated successfully!', type: 'success' });
+      setShowEditModal(false);
+      setEditingEvent(null);
+      loadData();
+      resetForm();
+    } catch (error) {
+      console.error('Update error:', error);
+      addNotification({ message: `Failed to update event: ${error.message}`, type: 'error' });
+    }
+  };
+
+  const resetForm = () => {
+    setFormData({
+      title: '',
+      description: '',
+      category: 'Technology',
+      date: '',
+      time: '',
+      venue: '',
+      price: '',
+      capacity: '',
+      image: ''
+    });
+  };
+
   const handleCreateEvent = async (e) => {
     e.preventDefault();
     try {
-      await api.createEvent({ ...formData, organizerId: user.id, organizer: user.name });
+      const eventData = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        startDate: new Date(`${formData.date}T${formData.time}`).toISOString(),
+        endDate: new Date(`${formData.date}T${formData.time}`).toISOString(),
+        venueId: parseInt(formData.venue),
+        ticketPrice: parseFloat(formData.price),
+        availableTickets: parseInt(formData.capacity),
+        eventImage: formData.image
+      };
+      
+      await api.createEvent(eventData);
       addNotification({ message: 'Event created successfully!', type: 'success' });
       setShowCreateModal(false);
       loadData();
-      setFormData({
-        title: '',
-        description: '',
-        category: 'Technology',
-        date: '',
-        time: '',
-        location: '',
-        venue: '',
-        price: '',
-        capacity: '',
-        image: ''
-      });
+      resetForm();
     } catch (error) {
       addNotification({ message: 'Failed to create event', type: 'error' });
     }
@@ -75,11 +144,13 @@ const OrganizerDashboard = () => {
   const handleDeleteEvent = async (id) => {
     if (window.confirm('Are you sure you want to delete this event?')) {
       try {
+        console.log('Deleting event:', id);
         await api.deleteEvent(id);
         addNotification({ message: 'Event deleted successfully!', type: 'success' });
         loadData();
       } catch (error) {
-        addNotification({ message: 'Failed to delete event', type: 'error' });
+        console.error('Delete error:', error);
+        addNotification({ message: `Failed to delete event: ${error.message}`, type: 'error' });
       }
     }
   };
@@ -183,32 +254,36 @@ const OrganizerDashboard = () => {
                         <th>Event</th>
                         <th>Date</th>
                         <th>Location</th>
-                        <th>Bookings</th>
-                        <th>Revenue</th>
+                        <th>Total Tickets</th>
+                        <th>Ticket Price</th>
                         <th>Status</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {events.map(event => (
-                        <tr key={event.id}>
+                        <tr key={event.eventId}>
                           <td>
                             <div className="event-cell">
-                              <img src={event.image} alt={event.title} />
+                              <img src={event.eventImage || '/placeholder.jpg'} alt={event.title} />
                               <span>{event.title}</span>
                             </div>
                           </td>
-                          <td>{new Date(event.date).toLocaleDateString()}</td>
-                          <td>{event.location}</td>
-                          <td>{event.booked}/{event.capacity}</td>
-                          <td>${event.price * event.booked}</td>
+                          <td>{new Date(event.startDate).toLocaleDateString()}</td>
+                          <td>{event.venueName}</td>
+                          <td>{event.availableTickets}</td>
+                          <td>₹{event.ticketPrice}</td>
                           <td>
-                            <span className={`status-badge ${event.status}`}>{event.status}</span>
+                            <span className={`status-badge ${event.isApproved ? 'approved' : 'pending'}`}>
+                              {event.isApproved ? 'Approved' : 'Pending'}
+                            </span>
                           </td>
                           <td>
                             <div className="action-buttons">
-                              <button className="icon-btn"><Edit size={16} /></button>
-                              <button className="icon-btn danger" onClick={() => handleDeleteEvent(event.id)}>
+                              <button className="icon-btn" onClick={() => handleEditEvent(event)}>
+                                <Edit size={16} />
+                              </button>
+                              <button className="icon-btn danger" onClick={() => handleDeleteEvent(event.eventId)}>
                                 <Trash2 size={16} />
                               </button>
                             </div>
@@ -224,11 +299,15 @@ const OrganizerDashboard = () => {
         </div>
       </div>
 
-      {showCreateModal && (
-        <div className="modal-overlay" onClick={() => setShowCreateModal(false)}>
+      {(showCreateModal || showEditModal) && (
+        <div className="modal-overlay" onClick={() => {
+          setShowCreateModal(false);
+          setShowEditModal(false);
+          setEditingEvent(null);
+        }}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <h2>Create New Event</h2>
-            <form onSubmit={handleCreateEvent} className="event-form">
+            <h2>{editingEvent ? 'Edit Event' : 'Create New Event'}</h2>
+            <form onSubmit={editingEvent ? handleUpdateEvent : handleCreateEvent} className="event-form">
               <div className="form-row">
                 <div className="form-group">
                   <label>Event Title</label>
@@ -262,17 +341,15 @@ const OrganizerDashboard = () => {
               </div>
               <div className="form-row">
                 <div className="form-group">
-                  <label>Location</label>
-                  <select value={formData.location} onChange={(e) => setFormData({ ...formData, location: e.target.value })} required>
-                    <option value="">Select Location</option>
-                    {locations.map(location => (
-                      <option key={location.id} value={location.name}>{location.name}</option>
+                  <label>Venue</label>
+                  <select value={formData.venue} onChange={(e) => handleVenueChange(e.target.value)} required>
+                    <option value="">Select Venue</option>
+                    {venues.map(venue => (
+                      <option key={venue.venueId} value={venue.venueId}>
+                        {venue.venueName} - {venue.location}
+                      </option>
                     ))}
                   </select>
-                </div>
-                <div className="form-group">
-                  <label>Venue</label>
-                  <input type="text" value={formData.venue} onChange={(e) => setFormData({ ...formData, venue: e.target.value })} required />
                 </div>
               </div>
               <div className="form-row">
@@ -282,7 +359,7 @@ const OrganizerDashboard = () => {
                 </div>
                 <div className="form-group">
                   <label>Capacity</label>
-                  <input type="number" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} required />
+                  <input type="number" value={formData.capacity} onChange={(e) => setFormData({ ...formData, capacity: e.target.value })} required readOnly />
                 </div>
               </div>
               <div className="form-group">
@@ -290,8 +367,12 @@ const OrganizerDashboard = () => {
                 <input type="url" value={formData.image} onChange={(e) => setFormData({ ...formData, image: e.target.value })} placeholder="https://example.com/image.jpg" />
               </div>
               <div className="modal-actions">
-                <Button type="button" variant="outline" onClick={() => setShowCreateModal(false)}>Cancel</Button>
-                <Button type="submit">Create Event</Button>
+                <Button type="button" variant="outline" onClick={() => {
+                  setShowCreateModal(false);
+                  setShowEditModal(false);
+                  setEditingEvent(null);
+                }}>Cancel</Button>
+                <Button type="submit">{editingEvent ? 'Update Event' : 'Create Event'}</Button>
               </div>
             </form>
           </div>

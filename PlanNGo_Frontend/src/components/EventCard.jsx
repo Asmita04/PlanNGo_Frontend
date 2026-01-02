@@ -16,7 +16,7 @@ const EventCard = ({ event }) => {
 
   const handleBookClick = (e) => {
     e.stopPropagation();
-    navigate(`/events/${event.id}/book`);
+    navigate(`/events/${event.eventId || event.id}/book`);
   };
 
   const handleFavoriteClick = (e) => {
@@ -42,8 +42,8 @@ const EventCard = ({ event }) => {
   };
 
   const booked = event.booked || 0;
-  const capacity = event.capacity || 0;
-  const isSoldOut = capacity > 0 && booked >= capacity;
+  const capacity = event.availableTickets || event.capacity || 0;
+  const isSoldOut = capacity <= 0;
   const isPopular = booked > (capacity * 0.8);
 
   return (
@@ -51,10 +51,10 @@ const EventCard = ({ event }) => {
       <div className="event-card">
         <div className="event-image" onClick={handleImageClick}>
           <img 
-            src={event.image || '/api/placeholder/400/220'} 
+            src={event.eventImage || event.image || 'https://via.placeholder.com/400x220?text=Event+Image'} 
             alt={event.title || 'Event'}
             onError={(e) => {
-              e.target.src = '/api/placeholder/400/220';
+              e.target.src = 'https://via.placeholder.com/400x220?text=Event+Image';
             }}
           />
           {isPopular && <div className="event-badge">Popular</div>}
@@ -71,10 +71,10 @@ const EventCard = ({ event }) => {
         <div className="event-info">
           <h3 className="event-title">{event.title || 'Untitled Event'}</h3>
           <p className="event-location">
-            {[event.venue, event.location].filter(Boolean).join(', ') || 'Location TBD'}
+            {event.venueName || event.venue || event.location || 'Location TBD'}
           </p>
           <p className="event-datetime">
-            {event.date ? new Date(event.date).toLocaleDateString() : 'Date TBD'}
+            {event.startDate ? new Date(event.startDate).toLocaleDateString() : (event.date ? new Date(event.date).toLocaleDateString() : 'Date TBD')}
             {event.time && ` • ${event.time}`}
           </p>
           <div className="event-actions">
@@ -90,7 +90,7 @@ const EventCard = ({ event }) => {
               onClick={handleBookClick}
               disabled={isSoldOut}
             >
-              {isSoldOut ? 'Sold Out' : `₹${event.price || 0}`}
+              {isSoldOut ? 'Sold Out' : `₹${event.ticketPrice || event.price || 0}`}
             </button>
           </div>
         </div>
@@ -102,7 +102,7 @@ const EventCard = ({ event }) => {
             <button className="modal-close" onClick={closeModal}>×</button>
             <div className="modal-image">
               <img 
-                src={event.image || '/api/placeholder/400/220'} 
+                src={event.eventImage || event.image || 'https://via.placeholder.com/400x220?text=Event+Image'} 
                 alt={event.title || 'Event'}
               />
             </div>
@@ -111,14 +111,14 @@ const EventCard = ({ event }) => {
               {event.organizer && <p className="modal-organizer">by {event.organizer}</p>}
               {event.description && <p className="modal-description">{event.description}</p>}
               <div className="modal-info">
-                {event.date && <p><strong>Date:</strong> {new Date(event.date).toLocaleDateString()}</p>}
+                {(event.startDate || event.date) && <p><strong>Date:</strong> {new Date(event.startDate || event.date).toLocaleDateString()}</p>}
                 {event.time && <p><strong>Time:</strong> {event.time}</p>}
-                {(event.venue || event.location) && (
-                  <p><strong>Location:</strong> {[event.venue, event.location].filter(Boolean).join(', ')}</p>
+                {(event.venueName || event.venue || event.location) && (
+                  <p><strong>Location:</strong> {event.venueName || event.venue || event.location}</p>
                 )}
-                {event.price && <p><strong>Price:</strong> ₹{event.price}</p>}
+                {(event.ticketPrice || event.price) && <p><strong>Price:</strong> ₹{event.ticketPrice || event.price}</p>}
                 {capacity > 0 && (
-                  <p><strong>Availability:</strong> {capacity - booked} tickets left</p>
+                  <p><strong>Availability:</strong> {capacity} tickets available</p>
                 )}
               </div>
               <div className="modal-actions">
@@ -140,7 +140,7 @@ const EventCard = ({ event }) => {
                   className="modal-book-btn"
                   onClick={() => {
                     setShowModal(false);
-                    navigate(`/events/${event.id}/book`);
+                    navigate(`/events/${event.eventId || event.id}/book`);
                   }}
                   disabled={isSoldOut}
                 >

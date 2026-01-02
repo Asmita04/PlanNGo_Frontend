@@ -2,6 +2,7 @@ export { authService } from './authService';
 export { eventsService } from './eventsService';
 export { bookingsService } from './bookingsService';
 export { usersService } from './usersService';
+export { venuesService } from './venuesService';
 export { default as apiClient } from './client';
 
 // Re-export for backward compatibility
@@ -9,6 +10,7 @@ import { authService } from './authService';
 import { eventsService } from './eventsService';
 import { bookingsService } from './bookingsService';
 import { usersService } from './usersService';
+import { venuesService } from './venuesService';
 
 export const api = {
   // Auth methods
@@ -48,4 +50,12 @@ export const api = {
   getAllUsers: usersService.getAllUsers,
   deleteUser: usersService.deleteUser,
   updateUserRole: usersService.updateUserRole,
+
+  // Venues methods
+  getAllVenues: venuesService.getAllVenues,
+  getAvailableVenues: venuesService.getAvailableVenues,
+  getVenueById: venuesService.getVenueById,
+  createVenue: venuesService.createVenue,
+  updateVenue: venuesService.updateVenue,
+  deleteVenue: venuesService.deleteVenue,
 };

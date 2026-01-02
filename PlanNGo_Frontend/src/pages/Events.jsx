@@ -28,7 +28,7 @@ const Events = () => {
 
   const loadEvents = async () => {
     try {
-      const data = await api.getAllEvents();
+      const data = await api.getAllEvents({ approved: true });
       setEvents(data);
       setFilteredEvents(data);
     } catch (error) {
@@ -44,9 +44,9 @@ const Events = () => {
     if (filters.search) {
       const search = filters.search.toLowerCase();
       filtered = filtered.filter(e =>
-        e.title.toLowerCase().includes(search) ||
-        e.description.toLowerCase().includes(search) ||
-        e.location.toLowerCase().includes(search)
+        e.title?.toLowerCase().includes(search) ||
+        e.description?.toLowerCase().includes(search) ||
+        (e.location || e.venueName)?.toLowerCase().includes(search)
       );
     }
 
@@ -55,12 +55,16 @@ const Events = () => {
     }
 
     if (filters.date) {
-      filtered = filtered.filter(e => e.date === filters.date);
+      filtered = filtered.filter(e => {
+        const eventDate = new Date(e.startDate || e.date).toISOString().split('T')[0];
+        return eventDate === filters.date;
+      });
     }
 
-    filtered = filtered.filter(e =>
-      e.price >= filters.priceRange[0] && e.price <= filters.priceRange[1]
-    );
+    filtered = filtered.filter(e => {
+      const price = e.ticketPrice || e.price || 0;
+      return price >= filters.priceRange[0] && price <= filters.priceRange[1];
+    });
 
     setFilteredEvents(filtered);
   };
@@ -158,7 +162,7 @@ const Events = () => {
           ) : (
             <div className="events-grid">
               {filteredEvents.map(event => (
-                <EventCard key={event.id} event={event} />
+                <EventCard key={event.eventId || event.id} event={event} />
               ))}
             </div>
           )}
